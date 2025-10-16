@@ -10,87 +10,88 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+// Move helper functions OUTSIDE the component
+const getStopIconColor = (stopType) => {
+    const colors = {
+        'FUEL': '#F59E0B',
+        'REST': '#8B5CF6',
+        'SLEEPER': '#6366F1',
+        'OFF_DUTY': '#EC4899',
+        'PICKUP': '#10B981',
+        'DROPOFF': '#EF4444'
+    };
+    return colors[stopType] || '#6B7280';
+};
+
+const getStopIcon = (stopType) => {
+    const icons = {
+        'FUEL': '⛽',
+        'REST': '☕',
+        'SLEEPER': '🛏️',
+        'OFF_DUTY': '🏠',
+        'PICKUP': '📦',
+        'DROPOFF': '📍'
+    };
+    return icons[stopType] || '📍';
+};
+
+const createCustomIcon = (label, color) => {
+    return L.divIcon({
+        className: 'custom-map-marker',
+        html: `
+            <div style="
+                background-color: ${color};
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 3px solid white;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                font-weight: bold;
+                color: white;
+                font-size: 14px;
+            ">
+                ${label}
+            </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+    });
+};
+
+const createStopIcon = (stopType) => {
+    const color = getStopIconColor(stopType);
+    const emoji = getStopIcon(stopType);
+    return L.divIcon({
+        className: 'custom-stop-marker',
+        html: `
+            <div style="
+                background-color: ${color};
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                font-size: 12px;
+            ">
+                ${emoji}
+            </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+    });
+};
+
 const RouteMap = ({ trip }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const markersRef = useRef([]);
     const polylinesRef = useRef([]);
-
-    const getStopIconColor = (stopType) => {
-        const colors = {
-            'FUEL': '#F59E0B',
-            'REST': '#8B5CF6',
-            'SLEEPER': '#6366F1',
-            'OFF_DUTY': '#EC4899',
-            'PICKUP': '#10B981',
-            'DROPOFF': '#EF4444'
-        };
-        return colors[stopType] || '#6B7280';
-    };
-
-    const getStopIcon = (stopType) => {
-        const icons = {
-            'FUEL': '⛽',
-            'REST': '☕',
-            'SLEEPER': '🛏️',
-            'OFF_DUTY': '🏠',
-            'PICKUP': '📦',
-            'DROPOFF': '📍'
-        };
-        return icons[stopType] || '📍';
-    };
-
-    const createCustomIcon = (label, color) => {
-        return L.divIcon({
-            className: 'custom-map-marker',
-            html: `
-                <div style="
-                    background-color: ${color};
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 3px solid white;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                    font-weight: bold;
-                    color: white;
-                    font-size: 14px;
-                ">
-                    ${label}
-                </div>
-            `,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-        });
-    };
-
-    const createStopIcon = (stopType) => {
-        const color = getStopIconColor(stopType);
-        const emoji = getStopIcon(stopType);
-        return L.divIcon({
-            className: 'custom-stop-marker',
-            html: `
-                <div style="
-                    background-color: ${color};
-                    width: 24px;
-                    height: 24px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 2px solid white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    font-size: 12px;
-                ">
-                    ${emoji}
-                </div>
-            `,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12],
-        });
-    };
 
     useEffect(() => {
         if (!mapRef.current || mapInstanceRef.current) return;
@@ -249,7 +250,7 @@ const RouteMap = ({ trip }) => {
             map.fitBounds(bounds, { padding: [50, 50] });
         }
 
-    }, [trip]);
+    }, [trip]); // Now no missing dependencies warning!
 
     return (
         <div className="space-y-4">

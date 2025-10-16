@@ -35,24 +35,6 @@ const About = () => {
                                     </ul>
                                 </div>
                             </div>
-
-                            <h4 className="mt-6">Experience</h4>
-                            <p>
-                                <strong>Software Developer, Docsecure Eswatini</strong><br />
-                                Mbabane, Hhohho Region — March 2025 to August 2025
-                            </p>
-                            <p>
-                                Developed a Document Management System to handle invoices, bank statements, pay slips, and receipts. Integrated Google's Document AI and OCR for text extraction. The system securely stores digitized documents in cloud vaults like Amazon AWS and Google Drive.
-                            </p>
-
-                            <h4 className="mt-6">Education</h4>
-                            <p>
-                                <strong>Bachelor's Degree in Computer Science</strong><br />
-                                Eswatini Medical Christian University, Mbabane, Hhohho Region — October 2020 to September 2024
-                            </p>
-                            <p>
-                                Gained foundational knowledge in programming, algorithms, data structures, and software development principles. This academic background laid the groundwork for a career in software engineering and mobile application development.
-                            </p>
                         </div>
                     </div>
                 </div>

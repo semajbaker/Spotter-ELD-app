@@ -66,6 +66,7 @@ const ProfileSettings = ({ user, onClose, onUpdate }) => {
             }
 
             const data = await response.json();
+            setProfileData(data);
             setSuccess('Profile updated successfully!');
             onUpdate(); // Refresh user data in parent
             

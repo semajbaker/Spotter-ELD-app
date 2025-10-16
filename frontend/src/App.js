@@ -182,23 +182,24 @@ const App = () => {
                 <></>
             )}
             {formShow ? (
-                <>
-                    <div className="fixed inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50">
-                        <Authenticate
-                            setToken={setToken}
-                            setId={setId}
-                            setUser={setUser}
-                            setMessage={setMessage}
-                            setClassName={setClassName}
-                            setShow={setShow}
-                            setSuperuser={setSuperuser}
-                            setLoading={setLoading}
-                        />
-                    </div>
-                </>
+            <>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
+                <Authenticate
+                    setToken={setToken}
+                    setId={setId}
+                    setUser={setUser}
+                    setMessage={setMessage}
+                    setClassName={setClassName}
+                    setShow={setShow}
+                    setSuperuser={setSuperuser}
+                    setLoading={setLoading}
+                />
+                </div>
+            </>
             ) : (
-                <></>
+            <></>
             )}
+
             {modalShow ? (
                 <>
                     <Modal
