@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import { Routes, Route, Link, useNavigate, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import * as fa from "react-icons/fa";
 import Navbar from "./components/Navbar";
@@ -21,7 +21,7 @@ import Authenticate from "./pages/auth/Authenticate";
 
 const App = () => {
     const navigate = useNavigate();
-    
+
     const [token, setToken] = useState(null);
     const [id, setId] = useState("");
     const [user, setUser] = useState("");
@@ -58,7 +58,7 @@ const App = () => {
         event.preventDefault();
         setFormShow((prevFormShow) => !prevFormShow);
     };
-    
+
     // Create logout component with navigate
     const LogoutComponent = Logout({
         setToken,
@@ -182,22 +182,22 @@ const App = () => {
                 <></>
             )}
             {formShow ? (
-            <>
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
-                <Authenticate
-                    setToken={setToken}
-                    setId={setId}
-                    setUser={setUser}
-                    setMessage={setMessage}
-                    setClassName={setClassName}
-                    setShow={setShow}
-                    setSuperuser={setSuperuser}
-                    setLoading={setLoading}
-                />
-                </div>
-            </>
+                <>
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
+                        <Authenticate
+                            setToken={setToken}
+                            setId={setId}
+                            setUser={setUser}
+                            setMessage={setMessage}
+                            setClassName={setClassName}
+                            setShow={setShow}
+                            setSuperuser={setSuperuser}
+                            setLoading={setLoading}
+                        />
+                    </div>
+                </>
             ) : (
-            <></>
+                <></>
             )}
 
             {modalShow ? (
@@ -224,6 +224,7 @@ const App = () => {
                 <></>
             )}
             <Routes>
+                {/* Public Routes */}
                 <Route
                     path="/"
                     element={
@@ -249,25 +250,34 @@ const App = () => {
                         </>
                     }
                 />
+
+                {/* Superuser Dashboard Route */}
                 <Route
                     path="/dashboard"
                     element={
-                        <>
+                        superuser ? (
                             <Dashboard handleModal={handleModal} />
-                        </>
+                        ) : (
+                            <Navigate to="/driver-dashboard" replace />
+                        )
                     }
                 />
+
+                {/* Driver Dashboard Route */}
                 <Route
                     path="/driver-dashboard"
                     element={
-                        <>
+                        superuser ? (
+                            <Navigate to="/dashboard" replace />
+                        ) : (
                             <DriverDashboard onLogout={handleModal} />
-                        </>
+                        )
                     }
                 />
 
+                {/* Catch-all redirect (optional) */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-
         </>
     );
 };

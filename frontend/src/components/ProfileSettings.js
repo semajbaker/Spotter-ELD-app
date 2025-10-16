@@ -23,7 +23,7 @@ const ProfileSettings = ({ user, onClose, onUpdate }) => {
         new_password2: ''
     });
 
-    const API_BASE = 'https://localhost:443';
+    const API_BASE = 'http://localhost:8000';
 
     // Handle profile data change
     const handleProfileChange = (e) => {

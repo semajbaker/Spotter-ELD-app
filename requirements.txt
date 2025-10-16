@@ -1,0 +1,14 @@
+setuptools
+django
+django-allauth==0.61.1
+django-crispy-forms
+django-bootstrap5
+django-tailwind[reload]
+django-cors-headers
+django-rest-framework
+djangorestframework-simplejwt[crypto]
+dj-rest-auth==7.0.0
+psycopg2-binary
+pillow
+geopy
+

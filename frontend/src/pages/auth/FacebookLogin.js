@@ -5,13 +5,13 @@ const useFacebookLogin = ({ setToken, setId, setUser, setMessage, setClassName, 
     const handleFacebookCallback = useCallback(async (code) => {
         try {
             // First request to get the token
-            const tokenResponse = await axios.post('https://localhost:443/rest-auth/facebook/login/', { code });
+            const tokenResponse = await axios.post('http://localhost:8000/rest-auth/facebook/login/', { code });
             const authToken = tokenResponse.data.key;
             localStorage.setItem('token', authToken);
             setToken(authToken);
 
             // Second request to get the user details using the token
-            const userResponse = await axios.get('https://localhost:443/rest-auth/user-request/', {
+            const userResponse = await axios.get('http://localhost:8000/rest-auth/user-request/', {
                 headers: {
                     'Authorization': `Token ${authToken}`
                 }

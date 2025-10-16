@@ -7,7 +7,7 @@ const TopBar = ({ onLogout, onOpenSettings }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
 
-    const API_BASE = 'https://localhost:443';
+    const API_BASE = 'http://localhost:8000';
 
     // Fetch current user data
     useEffect(() => {

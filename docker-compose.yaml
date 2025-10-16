@@ -67,19 +67,19 @@ services:
     depends_on:
       - backend
 
-  proxy:
-    image: nginx:latest
-    container_name: proxy
-    ports:
-      - 443:443
-      - 8080:8080
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./certificates:/etc/nginx/certificates
-    networks:
-      portfolio_net:
-        ipv4_address: 192.168.0.7
-    command: nginx -g 'daemon off;'
-    environment:
-      - NGINX_HOST=localhost
-      - NGINX_PORT=8080
+  #proxy:
+  #  image: nginx:latest
+  #  container_name: proxy
+  #  ports:
+  #    - 443:443
+  #    - 8080:8080
+  #  volumes:
+  #    - ./nginx.conf:/etc/nginx/nginx.conf
+  #    - ./certificates:/etc/nginx/certificates
+  #  networks:
+  #    portfolio_net:
+  #      ipv4_address: 192.168.0.7
+  #  command: nginx -g 'daemon off;'
+  #  environment:
+  #    - NGINX_HOST=localhost
+  #    - NGINX_PORT=8080

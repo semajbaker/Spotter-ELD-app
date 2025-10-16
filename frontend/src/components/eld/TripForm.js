@@ -32,7 +32,7 @@ const TripForm = ({ onTripCreated, onCancel }) => {
         setError(null);
 
         try {
-            const response = await fetch('https://localhost:443/api/trips/', {
+            const response = await fetch('http://localhost:8000/api/trips/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

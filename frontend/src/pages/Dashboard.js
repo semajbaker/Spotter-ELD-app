@@ -54,7 +54,7 @@ const Dashboard = ({ handleModal }) => {
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
 
-    const API_BASE = 'https://localhost:443';
+    const API_BASE = 'http://localhost:8000';
 
     // Fetch Current User
     useEffect(() => {

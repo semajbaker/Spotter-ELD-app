@@ -1,7 +1,7 @@
 import { Link as ScrollLink } from 'react-scroll';
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Img from "../images/profile-img.jpg";
+import Img from "../images/james.jpg";
 import * as fa from 'react-icons/fa';
 import * as bs from 'react-icons/bs';
 import * as bi from 'react-icons/bi';
