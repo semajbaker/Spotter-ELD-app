@@ -6,7 +6,12 @@
             "config": { "maxLambdaSize": "15mb", "runtime": "python3.11" }
         }
     ],
-
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "backend/wsgi.py"
+        }
+    ],
     "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
