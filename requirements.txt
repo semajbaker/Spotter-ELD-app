@@ -11,4 +11,5 @@ dj-rest-auth==7.0.0
 psycopg2-binary
 pillow
 geopy
+dotenv
 
