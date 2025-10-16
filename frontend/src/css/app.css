@@ -976,6 +976,10 @@ video {
   margin-top: 1.5rem;
 }
 
+.mt-8 {
+  margin-top: 2rem;
+}
+
 .mt-px {
   margin-top: 1px;
 }
@@ -3079,10 +3083,6 @@ video {
   text-transform: uppercase;
 }
 
-.italic {
-  font-style: italic;
-}
-
 .\!leading-tight {
   line-height: 1.25 !important;
 }
@@ -4375,8 +4375,8 @@ h1,
 
 .mobile-nav-toggle {
   position: fixed;
-  right: 15px;
-  top: 15px;
+  right: 230px;
+  top: 25px;
   z-index: 9998;
   border: 0;
   font-size: 24px;
@@ -4409,7 +4409,7 @@ h1,
 #hero {
   width: 100%;
   height: 100vh;
-  background: url("../images/hero-bg.jpg") top center;
+  background: url("../images/semaj.jpg") top center;
   background-size: cover;
 }
 
@@ -6450,6 +6450,11 @@ section {
 
 .hover\:bg-opacity-80:hover {
   --tw-bg-opacity: 0.8;
+}
+
+.hover\:text-blue-800:hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 101 192 / var(--tw-text-opacity, 1));
 }
 
 .hover\:text-blue-gray-500:hover {

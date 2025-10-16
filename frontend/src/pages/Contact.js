@@ -68,7 +68,7 @@ const Contact = () => {
                 <h4>LinkedIn:</h4>
                 <p>
                   <a 
-                    href="https://www.linkedin.com/in/james-baker" 
+                    href="https://www.linkedin.com/in/james-baker-75515732b/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800"
