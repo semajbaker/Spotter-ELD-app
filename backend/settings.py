@@ -121,7 +121,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL', 'http://localhost:3000')]
-#CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
+#CSRF_TRUSTED_ORIGINS = ['https://spotter-eld-app-backend.onrender.com']
 #USE_X_FORWARDED_HOST = True
 #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 

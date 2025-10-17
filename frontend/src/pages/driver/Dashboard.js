@@ -41,7 +41,7 @@ const DriverDashboard = (props) => {
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
 
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = 'https://spotter-eld-app-backend.onrender.com';
 
     // Fetch Current User Profile
     useEffect(() => {

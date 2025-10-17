@@ -7,7 +7,7 @@ const TopBar = ({ onLogout, onOpenSettings }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
 
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = 'https://spotter-eld-app-backend.onrender.com';
 
     // Fetch current user data
     useEffect(() => {
