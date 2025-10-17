@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.urls import path, include
+from django.urls import path, re_path, include
 from django.conf.urls.static import static
+from django.views.static import serve
 from rest_framework import routers
 from . import views
 from .views import (
@@ -45,11 +46,11 @@ urlpatterns = [
     path('rest-auth/signin/', views.Login.as_view(), name='login'),
     path('rest-auth/password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('rest-auth/admin-socialaccount/', SocialAccountList.as_view(), name='socialaccount-list'),
-    
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     # Password reset with key
     path('accounts/password/reset/key/<uidb64>/<token>/', 
          CustomPasswordResetFromKeyView.as_view(), 
          name='account_reset_password_from_key'),
 ]
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

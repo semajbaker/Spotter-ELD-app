@@ -200,10 +200,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/build/static')
-]
-MEDIA_ROOT = os.path.join(BASE_DIR, 'frontend/build/static/media')
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, 'frontend/build/static')
+#]
+#MEDIA_ROOT = os.path.join(BASE_DIR, 'frontend/build/static/media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 TAILWIND_APP_NAME = 'theme'
 NPM_BIN_PATH = '/usr/bin/npm'
 INTERNAL_IPS = ['backend']
