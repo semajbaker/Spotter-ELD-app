@@ -12,4 +12,6 @@ psycopg2-binary
 pillow
 geopy
 dotenv
+gunicorn
+whitenoise
 
