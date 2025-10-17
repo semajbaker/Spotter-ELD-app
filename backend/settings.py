@@ -122,7 +122,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL', 'http://localhost:3000')]
+CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL')]
 #CSRF_TRUSTED_ORIGINS = ['https://spotter-eld-app.onrender.com']
 #USE_X_FORWARDED_HOST = True
 #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -216,8 +216,8 @@ INTERNAL_IPS = ['backend']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SITE_ID = 1
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:3000')
-SITE_NAME = os.getenv('SITE_NAME', 'James Baker Portfolio')
+SITE_URL = os.getenv('SITE_URL')
+SITE_NAME = os.getenv('SITE_NAME')
 
 DEFAULT_AUTHENTICATION_CLASSES = (
     'django.contrib.auth.backends.ModelBackend',
@@ -226,8 +226,8 @@ DEFAULT_AUTHENTICATION_CLASSES = (
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')

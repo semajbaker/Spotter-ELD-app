@@ -6,7 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
-const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setShow, setSuperuser, setLoading }) => {
+const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setShow, setFormShow, setSuperuser, setLoading }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [forgotPassword, setForgotPassword] = useState(false);
     const [username, setUsername] = useState('');
@@ -18,6 +18,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
     const LoginSubmit = e => {
         e.preventDefault();
         setLoading(true);
+        setFormShow(false);
         const loginData = { 'username': username, 'password': password };
         axios.post('https://spotter-eld-app.onrender.com/rest-auth/signin/', loginData)
             .then(response => {
@@ -54,6 +55,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
             })
             .catch(err => {
                 console.log('Login error:', err);
+                setFormShow(true);
                 setLoading(false);
                 setClassName(`bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
                 
@@ -86,6 +88,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
     const SignupSubmit = e => {
         e.preventDefault();
         setLoading(true);
+        setFormShow(false);
         const signupData = { 'username': username, 'email': email, 'password': password, 'password2': password2 };
         axios.post('https://spotter-eld-app.onrender.com/rest-auth/register/', signupData)
             .then(res => {
@@ -99,6 +102,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
             .catch(err => {
                 console.log('Signup error:', err);
                 setLoading(false);
+                setFormShow(true);
                 setClassName(`bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
                 
                 let errorMessage = 'Registration failed. Please try again.';
@@ -132,6 +136,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
     const ForgotPasswordSubmit = e => {
         e.preventDefault();
         setLoading(true);
+        setFormShow(false);
         const resetData = { 'email': email };
         axios.post('https://spotter-eld-app.onrender.com/rest-auth/password-reset/', resetData)
             .then(res => {
@@ -144,6 +149,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
             .catch(err => {
                 console.log("Password reset request failed", err);
                 setLoading(false);
+                setFormShow(true);
                 setClassName(`bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
                 
                 let errorMessage = 'Password reset failed. Please try again.';
