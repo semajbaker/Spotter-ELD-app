@@ -54,7 +54,7 @@ const Dashboard = ({ handleModal }) => {
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
 
-    const API_BASE = 'https://spotter-eld-app-backend.onrender.com';
+    const API_BASE = 'https://spotter-eld-app.onrender.com';
 
     // Fetch Current User
     useEffect(() => {

@@ -32,7 +32,7 @@ const TripForm = ({ onTripCreated, onCancel }) => {
         setError(null);
 
         try {
-            const response = await fetch('https://spotter-eld-app-backend.onrender.com/api/trips/', {
+            const response = await fetch('https://spotter-eld-app.onrender.com/api/trips/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

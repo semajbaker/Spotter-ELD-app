@@ -23,7 +23,7 @@ const ProfileSettings = ({ user, onClose, onUpdate }) => {
         new_password2: ''
     });
 
-    const API_BASE = 'https://spotter-eld-app-backend.onrender.com';
+    const API_BASE = 'https://spotter-eld-app.onrender.com';
 
     // Handle profile data change
     const handleProfileChange = (e) => {
