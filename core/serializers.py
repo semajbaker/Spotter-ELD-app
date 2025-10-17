@@ -58,10 +58,11 @@ class UserSignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Password must contain at least one uppercase letter")
         if not any(char.isdigit() for char in password):
             raise serializers.ValidationError("Password must contain at least one digit")
-        if not any(char in '()[\]{}|\\`~!@#$%^&*_\-+=;:\'",<>./?' for char in password):
+        if not any(char in r'()[\]{}|\\`~!@#$%^&*_\-+=;:\'",<>./?' for char in password):
             raise serializers.ValidationError("Password must contain at least one symbol")
 
         return data
+
     
     def create(self, validated_data):
         users = user_model.objects.create(
