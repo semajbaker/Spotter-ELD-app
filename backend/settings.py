@@ -140,6 +140,15 @@ CSRF_TRUSTED_ORIGINS = [os.getenv('BACKEND_URL'), os.getenv('FRONTEND_URL')]
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Session and Cookie settings
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+SESSION_COOKIE_HTTPONLY = True
+
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
