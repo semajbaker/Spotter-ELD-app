@@ -276,6 +276,16 @@ body {
     content: "";
     background-color: var(--bs-danger);
   }
+  @media screen and (max-width: 720px){
+    .mobile-nav-toggle{
+      right: 130px !important;
+    }
+  }
+    @media screen and (max-width: 430px){
+    .mobile-nav-toggle{
+      right: 105px !important;
+    }
+  }
   @media screen and (max-width: 1256px){
     .logo_container{
       left: 0;

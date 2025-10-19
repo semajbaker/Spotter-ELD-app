@@ -3279,11 +3279,6 @@ video {
   color: rgb(49 27 146 / var(--tw-text-opacity, 1));
 }
 
-.text-gray-200 {
-  --tw-text-opacity: 1;
-  color: rgb(238 238 238 / var(--tw-text-opacity, 1));
-}
-
 .text-gray-300 {
   --tw-text-opacity: 1;
   color: rgb(224 224 224 / var(--tw-text-opacity, 1));
@@ -4209,6 +4204,18 @@ h1,
   opacity: 0;
   content: "";
   background-color: var(--bs-danger);
+}
+
+@media screen and (max-width: 720px){
+  .mobile-nav-toggle{
+    right: 130px !important;
+  }
+}
+
+@media screen and (max-width: 430px){
+  .mobile-nav-toggle{
+    right: 105px !important;
+  }
 }
 
 @media screen and (max-width: 1256px){

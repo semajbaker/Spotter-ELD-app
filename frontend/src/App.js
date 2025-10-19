@@ -212,7 +212,7 @@ const App = () => {
       )}
 
       {loading && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
           <LoadingWidget />
         </div>
       )}

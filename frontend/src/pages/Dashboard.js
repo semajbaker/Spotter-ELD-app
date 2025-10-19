@@ -9,6 +9,8 @@ import TripForm from "../components/eld/TripForm";
 import TripDetailsModal from "../components/eld/TripDetailsModal";
 import ProfileSettings from "../components/ProfileSettings";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const Dashboard = ({ handleModal }) => {
     // Original state
     const [users, setUsers] = useState([]);
@@ -54,11 +56,18 @@ const Dashboard = ({ handleModal }) => {
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
 
-    const API_BASE = 'https://spotter-eld-app.onrender.com';
-
     // Fetch Current User
     useEffect(() => {
+        setLoading(true);
         fetchCurrentUser();
+        fetchUsers();
+        fetchTokens();
+        fetchEmails();
+        fetchSocialAccounts();
+        fetchTrips();
+        fetchStops();
+        fetchDailyLogs();
+        setLoading(false);
     }, []);
 
     const fetchCurrentUser = () => {
@@ -73,11 +82,6 @@ const Dashboard = ({ handleModal }) => {
             })
             .catch(error => console.error('Error fetching user data:', error));
     };
-
-    // Fetch Users
-    useEffect(() => {
-        fetchUsers();
-    }, []);
 
     const fetchUsers = () => {
         fetch(`${API_BASE}/rest-auth/admin-user/`, {
@@ -94,11 +98,6 @@ const Dashboard = ({ handleModal }) => {
             .catch(error => console.error('Error fetching user data:', error));
     };
 
-    // Fetch Tokens
-    useEffect(() => {
-        fetchTokens();
-    }, []);
-
     const fetchTokens = () => {
         fetch(`${API_BASE}/rest-auth/admin-token/`, {
             headers: {
@@ -113,11 +112,6 @@ const Dashboard = ({ handleModal }) => {
             })
             .catch(error => console.error('Error fetching token data:', error));
     };
-
-    // Fetch Emails
-    useEffect(() => {
-        fetchEmails();
-    }, []);
 
     const fetchEmails = () => {
         fetch(`${API_BASE}/rest-auth/admin-email/`, {
@@ -134,11 +128,6 @@ const Dashboard = ({ handleModal }) => {
             .catch(error => console.error('Error fetching email data:', error));
     };
 
-    // Fetch Social Accounts
-    useEffect(() => {
-        fetchSocialAccounts();
-    }, []);
-
     const fetchSocialAccounts = () => {
         fetch(`${API_BASE}/rest-auth/admin-socialaccount/`, {
             headers: {
@@ -153,11 +142,6 @@ const Dashboard = ({ handleModal }) => {
             })
             .catch(error => console.error('Error fetching social account data:', error));
     };
-
-    // Fetch Trips
-    useEffect(() => {
-        fetchTrips();
-    }, []);
 
     const fetchTrips = () => {
         fetch(`${API_BASE}/api/trips/`, {
@@ -176,11 +160,6 @@ const Dashboard = ({ handleModal }) => {
             .catch(error => console.error('Error fetching trips data:', error));
     };
 
-    // Fetch Stops
-    useEffect(() => {
-        fetchStops();
-    }, []);
-
     const fetchStops = () => {
         fetch(`${API_BASE}/api/stops/`, {
             headers: {
@@ -197,11 +176,6 @@ const Dashboard = ({ handleModal }) => {
             })
             .catch(error => console.error('Error fetching stops data:', error));
     };
-
-    // Fetch Daily Logs
-    useEffect(() => {
-        fetchDailyLogs();
-    }, []);
 
     const fetchDailyLogs = () => {
         fetch(`${API_BASE}/api/daily-logs/`, {
@@ -377,10 +351,17 @@ const Dashboard = ({ handleModal }) => {
     };
 
     const handleTripCreated = () => {
-        fetchTrips();
-        fetchDailyLogs();
+        setLoading(true)
+        fetchCurrentUser();
         fetchUsers();
+        fetchTokens();
+        fetchEmails();
+        fetchSocialAccounts();
+        fetchTrips();
+        fetchStops();
+        fetchDailyLogs();
         setShowTripForm(false);
+        setLoading(false)
     };
 
     // Dropdown toggle

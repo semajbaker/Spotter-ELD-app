@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setShow, setFormShow, setSuperuser, setLoading }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -20,7 +21,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
         setLoading(true);
         setFormShow(false);
         const loginData = { 'username': username, 'password': password };
-        axios.post('https://spotter-eld-app.onrender.com/rest-auth/signin/', loginData)
+        axios.post(`${API_BASE}/rest-auth/signin/`, loginData)
             .then(response => {
                 let authToken = localStorage.setItem('token', response.data.token);
                 setToken(authToken);
@@ -90,7 +91,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
         setLoading(true);
         setFormShow(false);
         const signupData = { 'username': username, 'email': email, 'password': password, 'password2': password2 };
-        axios.post('https://spotter-eld-app.onrender.com/rest-auth/register/', signupData)
+        axios.post(`${API_BASE}/rest-auth/register/`, signupData)
             .then(res => {
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
@@ -138,7 +139,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
         setLoading(true);
         setFormShow(false);
         const resetData = { 'email': email };
-        axios.post('https://spotter-eld-app.onrender.com/rest-auth/password-reset/', resetData)
+        axios.post(`${API_BASE}/rest-auth/password-reset/`, resetData)
             .then(res => {
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
@@ -176,22 +177,22 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
 
     const googleAuth = () => {
         localStorage.setItem("socialAuth", "google");
-        const clientID = "907362169282-poa8jm8d068c9jbbneoj1qgb0tvjth4j.apps.googleusercontent.com";
-        const callBackURI = "https://spotter-eld-app.onrender.com/";
+        const clientID = process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID;
+        const callBackURI = `${API_BASE}/`;
         window.location.replace(`https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=${callBackURI}&prompt=consent&response_type=code&client_id=${clientID}&scope=openid%20email%20profile&access_type=offline`);
     };
 
     const githubAuth = () => {
         localStorage.setItem("socialAuth", "github");
-        const clientID = "Iv23liCRgSTUBl6MdySH";
-        const callBackURI = "https://spotter-eld-app.onrender.com/";
+        const clientID = process.env.REACT_APP_GITHUB_OAUTH_CLIENT_ID;
+        const callBackURI = `${API_BASE}/`;
         window.location.replace(`https://github.com/login/oauth/authorize?redirect_uri=${callBackURI}&client_id=${clientID}&scope=user:email`);
     };
 
     const facebookAuth = () => {
         localStorage.setItem("socialAuth", "facebook");
-        const clientID = "3627927404180303";
-        const callBackURI = "https://spotter-eld-app.onrender.com/";
+        const clientID = process.env.REACT_APP_FACEBOOK_OAUTH_CLIENT_ID;
+        const callBackURI = `${API_BASE}/`;
         window.location.replace(`https://www.facebook.com/v10.0/dialog/oauth?client_id=${clientID}&redirect_uri=${callBackURI}&state={"{st=state123abc,ds=123456789}"}`);
     };
 

@@ -8,6 +8,8 @@ import TripForm from "../../components/eld/TripForm";
 import TripDetailsModal from "../../components/eld/TripDetailsModal";
 import ProfileSettings from "../../components/ProfileSettings";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const DriverDashboard = (props) => {
     // User state
     const [currentUser, setCurrentUser] = useState(null);
@@ -41,11 +43,13 @@ const DriverDashboard = (props) => {
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
 
-    const API_BASE = 'https://spotter-eld-app.onrender.com';
-
     // Fetch Current User Profile
     useEffect(() => {
+        setLoading(true);
         fetchCurrentUser();
+        fetchTrips();
+        fetchStops();
+        setLoading(false);
     }, []);
 
     const fetchCurrentUser = () => {
@@ -60,11 +64,6 @@ const DriverDashboard = (props) => {
             })
             .catch(error => console.error('Error fetching user data:', error));
     };
-
-    // Fetch User's Trips
-    useEffect(() => {
-        fetchTrips();
-    }, []);
 
     const fetchTrips = () => {
         fetch(`${API_BASE}/api/trips/`, {
@@ -83,11 +82,6 @@ const DriverDashboard = (props) => {
             .catch(error => console.error('Error fetching trips data:', error));
     };
 
-    // Fetch User's Stops
-    useEffect(() => {
-        fetchStops();
-    }, []);
-
     const fetchStops = () => {
         fetch(`${API_BASE}/api/stops/`, {
             headers: {
@@ -105,10 +99,6 @@ const DriverDashboard = (props) => {
             .catch(error => console.error('Error fetching stops data:', error));
     };
 
-    // Fetch User's Daily Logs
-    useEffect(() => {
-        fetchDailyLogs();
-    }, []);
 
     const fetchDailyLogs = () => {
         fetch(`${API_BASE}/api/daily-logs/`, {

@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import * as fa from 'react-icons/fa';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const TopBar = ({ onLogout, onOpenSettings }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
-
-    const API_BASE = 'https://spotter-eld-app.onrender.com';
 
     // Fetch current user data
     useEffect(() => {

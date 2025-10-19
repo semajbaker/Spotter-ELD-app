@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const Logout = ({setToken, setId, setUser, setMessage, setClassName, setShow, setSuperuser, setLoading}) =>{
     const navigate = useNavigate();
     const LogoutSubmit = () => {
-        axios.post('https://spotter-eld-app.onrender.com/rest-auth/logout/')
+        axios.post(`${API_BASE}/rest-auth/logout/`)
             .then(response => {
                 setLoading(true);
                 localStorage.removeItem("token");

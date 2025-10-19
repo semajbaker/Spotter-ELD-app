@@ -1,17 +1,19 @@
 import axios from "axios";
 import { useCallback } from "react";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const useGithubLogin = ({ setToken, setId, setUser, setMessage, setClassName, setShow, setSuperuser }) => {
     const handleGithubCallback = useCallback(async (code) => {
         try {
             // First request to get the token
-            const tokenResponse = await axios.post('https://spotter-eld-app.onrender.com/rest-auth/github/login/', { code });
+            const tokenResponse = await axios.post(`${API_BASE}/rest-auth/github/login/`, { code });
             const authToken = tokenResponse.data.key;
             localStorage.setItem('token', authToken);
             setToken(authToken);
 
             // Second request to get the user details using the token
-            const userResponse = await axios.get('https://spotter-eld-app.onrender.com/rest-auth/user-request/', {
+            const userResponse = await axios.get(`${API_BASE}/rest-auth/user-request/`, {
                 headers: {
                     'Authorization': `Token ${authToken}`
                 }

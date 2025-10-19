@@ -25,14 +25,14 @@ const TripForm = ({ onTripCreated, onCancel }) => {
             [name]: value
         }));
     };
-
+    const API_BASE = process.env.REACT_APP_API_URL;
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-
+        
         try {
-            const response = await fetch('https://spotter-eld-app.onrender.com/api/trips/', {
+            const response = await fetch(`${API_BASE}/api/trips/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
