@@ -123,6 +123,18 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL')]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 #CSRF_TRUSTED_ORIGINS = [os.getenv('BACKEND_URL'), os.getenv('FRONTEND_URL')]
 #USE_X_FORWARDED_HOST = True
 #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -205,7 +217,6 @@ MEDIA_URL = '/media/'
 #STATICFILES_DIRS = [
 #    os.path.join(BASE_DIR, 'frontend/build/static')
 #]
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'frontend/build/static/media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 TAILWIND_APP_NAME = 'theme'
 NPM_BIN_PATH = '/usr/bin/npm'
