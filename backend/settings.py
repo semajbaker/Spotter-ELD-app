@@ -135,9 +135,10 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-#CSRF_TRUSTED_ORIGINS = [os.getenv('BACKEND_URL'), os.getenv('FRONTEND_URL')]
-#USE_X_FORWARDED_HOST = True
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = [os.getenv('BACKEND_URL'), os.getenv('FRONTEND_URL')]
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ROOT_URLCONF = 'backend.urls'
 
