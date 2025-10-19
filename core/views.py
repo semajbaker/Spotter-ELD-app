@@ -1,5 +1,6 @@
 import jwt
 import os
+import logging
 from time import time, sleep
 from datetime import datetime, timedelta
 from django.shortcuts import render
@@ -38,7 +39,7 @@ from .models import Trip, Stop, DailyLog, LogEntry, RouteWaypoint
 from .utils.route_calculator import RouteCalculator
 from .utils.eld_calculator import ELDCalculator
 
-
+logger = logging.getLogger(__name__)
 # Original auth views
 user = get_user_model()
 
@@ -85,8 +86,10 @@ class GoogleOAuth2IatValidationAdapter(GoogleOAuth2Adapter):
                 - time()
             )
         except jwt.PyJWTError as e:
+            logger.error(f"Invalid id_token during 'iat' validation: {e}")
             raise OAuth2Error("Invalid id_token during 'iat' validation") from e
         except KeyError as e:
+            logger.error(f"Failed to get 'iat' from id_token: {e}")
             raise OAuth2Error("Failed to get 'iat' from id_token") from e
 
         if delta_time > 0 and delta_time <= 30:
@@ -98,7 +101,24 @@ class GoogleOAuth2IatValidationAdapter(GoogleOAuth2Adapter):
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2IatValidationAdapter
     client_class = OAuth2Client
-    callback_url = os.getenv('FRONTEND_URL')
+    @property
+    def callback_url(self):
+        return os.getenv('FRONTEND_URL')
+    
+    def post(self, request, *args, **kwargs):
+        logger.info(f"Google login request received")
+        logger.info(f"Request data: {request.data}")
+        logger.info(f"Request headers: {dict(request.headers)}")
+        logger.info(f"Callback URL: {self.callback_url}")
+        
+        try:
+            response = super().post(request, *args, **kwargs)
+            logger.info(f"Google login successful: {response.data}")
+            return response
+        except Exception as e:
+            logger.error(f"Google login failed: {str(e)}")
+            logger.exception(e)
+            raise
 
 
 class GithubLogin(SocialLoginView):
