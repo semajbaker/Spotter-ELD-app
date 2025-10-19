@@ -1,4 +1,5 @@
 import jwt
+import os
 from time import time, sleep
 from datetime import datetime, timedelta
 from django.shortcuts import render
@@ -97,19 +98,19 @@ class GoogleOAuth2IatValidationAdapter(GoogleOAuth2Adapter):
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2IatValidationAdapter
     client_class = OAuth2Client
-    callback_url = "http://localhost:3000/"
+    callback_url = os.getenv('FRONTEND_URL')
 
 
 class GithubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = "http://localhost:3000/"
+    callback_url = os.getenv('FRONTEND_URL')
 
 
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = "http://localhost:3000/"
+    callback_url = os.getenv('FRONTEND_URL')
 
 
 class UserViewSet(viewsets.ModelViewSet):
