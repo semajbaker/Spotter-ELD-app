@@ -141,7 +141,21 @@ class GithubLogin(SocialLoginView):
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = os.getenv('FRONTEND_URL')
+    callback_url = f"{FRONTEND_URL}/"  # Changed to class attribute
+    
+    def post(self, request, *args, **kwargs):
+        logger.info(f"Facebook login request received")
+        logger.info(f"Request data: {request.data}")
+        logger.info(f"Callback URL: {self.callback_url}")
+        
+        try:
+            response = super().post(request, *args, **kwargs)
+            logger.info(f"Facebook login successful")
+            return response
+        except Exception as e:
+            logger.error(f"Facebook login failed: {str(e)}")
+            logger.exception(e)
+            raise
 
 
 class UserViewSet(viewsets.ModelViewSet):
