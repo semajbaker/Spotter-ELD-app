@@ -122,6 +122,9 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+SOCIALACCOUNT_ADAPTER = 'core.adapters.MySocialAccountAdapter'
+ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+
 CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL')]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
