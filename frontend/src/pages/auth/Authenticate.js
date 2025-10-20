@@ -186,7 +186,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
     const githubAuth = () => {
         localStorage.setItem("socialAuth", "github");
         const clientID = process.env.REACT_APP_GITHUB_OAUTH_CLIENT_ID;
-        const callBackURI = `${CALLBACK_URI}/`;
+        const callBackURI = `${CALLBACK_URI}/facebook`;
         window.location.replace(`https://github.com/login/oauth/authorize?redirect_uri=${callBackURI}&client_id=${clientID}&scope=user:email`);
     };
 
