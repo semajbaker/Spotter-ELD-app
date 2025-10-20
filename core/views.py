@@ -42,7 +42,7 @@ from .utils.eld_calculator import ELDCalculator
 logger = logging.getLogger(__name__)
 # Original auth views
 user = get_user_model()
-
+FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 def index(request):
     return render(request, 'index.html')
@@ -99,7 +99,6 @@ class GoogleOAuth2IatValidationAdapter(GoogleOAuth2Adapter):
 
 
 class GoogleLogin(SocialLoginView):
-    FRONTEND_URL = os.getenv('FRONTEND_URL')
     adapter_class = GoogleOAuth2IatValidationAdapter
     client_class = OAuth2Client
     callback_url = f"{FRONTEND_URL}/"  # Changed to class attribute
@@ -122,7 +121,21 @@ class GoogleLogin(SocialLoginView):
 class GithubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = os.getenv('FRONTEND_URL')
+    callback_url = f"{FRONTEND_URL}/"  # Changed to class attribute
+    
+    def post(self, request, *args, **kwargs):
+        logger.info(f"GitHub login request received")
+        logger.info(f"Request data: {request.data}")
+        logger.info(f"Callback URL: {self.callback_url}")
+        
+        try:
+            response = super().post(request, *args, **kwargs)
+            logger.info(f"GitHub login successful")
+            return response
+        except Exception as e:
+            logger.error(f"GitHub login failed: {str(e)}")
+            logger.exception(e)
+            raise
 
 
 class FacebookLogin(SocialLoginView):
