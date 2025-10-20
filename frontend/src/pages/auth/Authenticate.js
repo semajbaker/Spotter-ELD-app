@@ -30,7 +30,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 setId(authId);
                 let authUser = localStorage.setItem('user', username);
                 setUser(authUser);
-                
+
                 // Set superuser status
                 const isSuperuser = response.data.is_superuser === true;
                 if (isSuperuser) {
@@ -40,19 +40,19 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                     localStorage.setItem('is_superuser', false);
                     setSuperuser(false);
                 }
-                
+
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
                 setClassName(`bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
                 setMessage(`Successfully logged in as ${username}.`);
-                
+
                 // Redirect based on user role
                 if (isSuperuser) {
                     navigate("/dashboard");
                 } else {
                     navigate("/driver-dashboard");
                 }
-                
+
                 setLoading(false);
             })
             .catch(err => {
@@ -60,27 +60,27 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 setFormShow(true);
                 setLoading(false);
                 setClassName(`bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
-                
+
                 let errorMessage = 'Invalid credentials. Please try again.';
                 if (err.response && err.response.data) {
                     const error = err.response.data;
                     if (error.non_field_errors) {
-                        errorMessage = Array.isArray(error.non_field_errors) 
-                            ? error.non_field_errors[0] 
+                        errorMessage = Array.isArray(error.non_field_errors)
+                            ? error.non_field_errors[0]
                             : error.non_field_errors;
                     } else if (error.detail) {
                         errorMessage = error.detail;
                     } else if (error.username) {
-                        errorMessage = Array.isArray(error.username) 
-                            ? error.username[0] 
+                        errorMessage = Array.isArray(error.username)
+                            ? error.username[0]
                             : error.username;
                     } else if (error.password) {
-                        errorMessage = Array.isArray(error.password) 
-                            ? error.password[0] 
+                        errorMessage = Array.isArray(error.password)
+                            ? error.password[0]
                             : error.password;
                     }
                 }
-                
+
                 setMessage(errorMessage);
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
@@ -106,29 +106,29 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 setLoading(false);
                 setFormShow(true);
                 setClassName(`bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
-                
+
                 let errorMessage = 'Registration failed. Please try again.';
                 if (err.response && err.response.data) {
                     const error = err.response.data;
                     if (error.username) {
-                        errorMessage = Array.isArray(error.username) 
-                            ? error.username[0] 
+                        errorMessage = Array.isArray(error.username)
+                            ? error.username[0]
                             : error.username;
                     } else if (error.email) {
-                        errorMessage = Array.isArray(error.email) 
-                            ? error.email[0] 
+                        errorMessage = Array.isArray(error.email)
+                            ? error.email[0]
                             : error.email;
                     } else if (error.password) {
-                        errorMessage = Array.isArray(error.password) 
-                            ? error.password[0] 
+                        errorMessage = Array.isArray(error.password)
+                            ? error.password[0]
                             : error.password;
                     } else if (error.non_field_errors) {
-                        errorMessage = Array.isArray(error.non_field_errors) 
-                            ? error.non_field_errors[0] 
+                        errorMessage = Array.isArray(error.non_field_errors)
+                            ? error.non_field_errors[0]
                             : error.non_field_errors;
                     }
                 }
-                
+
                 setMessage(errorMessage);
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
@@ -153,23 +153,23 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 setLoading(false);
                 setFormShow(true);
                 setClassName(`bg-red-100 border-t-4 border-red-500 rounded-b text-red-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
-                
+
                 let errorMessage = 'Password reset failed. Please try again.';
                 if (err.response && err.response.data) {
                     const error = err.response.data;
                     if (error.email) {
-                        errorMessage = Array.isArray(error.email) 
-                            ? error.email[0] 
+                        errorMessage = Array.isArray(error.email)
+                            ? error.email[0]
                             : error.email;
                     } else if (error.non_field_errors) {
-                        errorMessage = Array.isArray(error.non_field_errors) 
-                            ? error.non_field_errors[0] 
+                        errorMessage = Array.isArray(error.non_field_errors)
+                            ? error.non_field_errors[0]
                             : error.non_field_errors;
                     } else if (error.detail) {
                         errorMessage = error.detail;
                     }
                 }
-                
+
                 setMessage(errorMessage);
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
@@ -194,8 +194,12 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
         localStorage.setItem("socialAuth", "facebook");
         const clientID = process.env.REACT_APP_FACEBOOK_OAUTH_CLIENT_ID;
         const callBackURI = `${CALLBACK_URI}/facebook`;
-        window.location.replace(`https://www.facebook.com/v10.0/dialog/oauth?client_id=${clientID}&redirect_uri=${callBackURI}&state={"{st=state123abc,ds=123456789}"}`);
+        const state = "state123abc"; // optional
+        window.location.replace(
+            `https://www.facebook.com/v10.0/dialog/oauth?client_id=${clientID}&redirect_uri=${encodeURIComponent(callBackURI)}&state=${state}&response_type=code&scope=email,public_profile`
+        );
     };
+
 
     return (
         <>
