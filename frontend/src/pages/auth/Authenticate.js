@@ -186,14 +186,14 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
     const githubAuth = () => {
         localStorage.setItem("socialAuth", "github");
         const clientID = process.env.REACT_APP_GITHUB_OAUTH_CLIENT_ID;
-        const callBackURI = `${CALLBACK_URI}/facebook`;
+        const callBackURI = `${CALLBACK_URI}/`;
         window.location.replace(`https://github.com/login/oauth/authorize?redirect_uri=${callBackURI}&client_id=${clientID}&scope=user:email`);
     };
 
     const facebookAuth = () => {
         localStorage.setItem("socialAuth", "facebook");
         const clientID = process.env.REACT_APP_FACEBOOK_OAUTH_CLIENT_ID;
-        const callBackURI = `${CALLBACK_URI}/`;
+        const callBackURI = `${CALLBACK_URI}/facebook`;
         window.location.replace(`https://www.facebook.com/v10.0/dialog/oauth?client_id=${clientID}&redirect_uri=${callBackURI}&state={"{st=state123abc,ds=123456789}"}`);
     };
 
