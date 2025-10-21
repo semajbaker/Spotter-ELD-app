@@ -144,13 +144,13 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Session and Cookie settings
-SESSION_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
-SESSION_COOKIE_HTTPONLY = True
+#SESSION_COOKIE_SECURE = not DEBUG
+#SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+#SESSION_COOKIE_HTTPONLY = True
 
-CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
-CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+#CSRF_COOKIE_SECURE = not DEBUG
+#CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+#CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -227,9 +227,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-#STATICFILES_DIRS = [
-#    os.path.join(BASE_DIR, 'frontend/build/static')
-#]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static')
+]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 TAILWIND_APP_NAME = 'theme'
 NPM_BIN_PATH = '/usr/bin/npm'

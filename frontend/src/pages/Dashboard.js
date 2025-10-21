@@ -1,7 +1,6 @@
 // frontend/src/pages/admin/Dashboard.js
-
-import { useEffect, useState } from 'react';
-
+import { useDashboardData } from '../hooks/useDashboardData';
+import { useState } from 'react';
 import SideNav from "../components/SideNav";
 import TopBar from "../components/TopBar";
 import Table from "../components/Table";
@@ -12,25 +11,29 @@ import ProfileSettings from "../components/ProfileSettings";
 const API_BASE = process.env.REACT_APP_API_URL;
 
 const Dashboard = ({ handleModal }) => {
-    // Original state
-    const [users, setUsers] = useState([]);
-    const [tokens, setTokens] = useState([]);
-    const [emails, setEmails] = useState([]);
-    const [socialAccounts, setSocialAccounts] = useState([]);
-    
-    // ELD Trip state
-    const [trips, setTrips] = useState([]);
-    const [stops, setStops] = useState([]);
-    const [dailyLogs, setDailyLogs] = useState([]);
-    
+
+    // Get all data from the custom hook
+    const {
+        currentUser,
+        users,
+        tokens,
+        emails,
+        socialAccounts,
+        trips,
+        stops,
+        dailyLogs,
+        isLoading,
+        invalidateAll,
+        invalidateQueries,
+        refetchCurrentUser
+    } = useDashboardData();
+
     // UI state
     const [showTripForm, setShowTripForm] = useState(false);
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [showTripDetails, setShowTripDetails] = useState(false);
     const [showProfileSettings, setShowProfileSettings] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null);
-    
+
     // Search state
     const [searchQueries, setSearchQueries] = useState({
         trips: '',
@@ -41,7 +44,7 @@ const Dashboard = ({ handleModal }) => {
         emails: '',
         socialAccounts: ''
     });
-    
+
     // Selected items for bulk actions
     const [selectedItems, setSelectedItems] = useState({
         trips: [],
@@ -52,147 +55,9 @@ const Dashboard = ({ handleModal }) => {
         emails: [],
         socialAccounts: []
     });
-    
+
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
-
-    // Fetch Current User
-    useEffect(() => {
-        setLoading(true);
-        fetchCurrentUser();
-        fetchUsers();
-        fetchTokens();
-        fetchEmails();
-        fetchSocialAccounts();
-        fetchTrips();
-        fetchStops();
-        fetchDailyLogs();
-        setLoading(false);
-    }, []);
-
-    const fetchCurrentUser = () => {
-        fetch(`${API_BASE}/rest-auth/user/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                setCurrentUser(data);
-            })
-            .catch(error => console.error('Error fetching user data:', error));
-    };
-
-    const fetchUsers = () => {
-        fetch(`${API_BASE}/rest-auth/admin-user/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    setUsers(data);
-                }
-            })
-            .catch(error => console.error('Error fetching user data:', error));
-    };
-
-    const fetchTokens = () => {
-        fetch(`${API_BASE}/rest-auth/admin-token/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    setTokens(data);
-                }
-            })
-            .catch(error => console.error('Error fetching token data:', error));
-    };
-
-    const fetchEmails = () => {
-        fetch(`${API_BASE}/rest-auth/admin-email/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    setEmails(data);
-                }
-            })
-            .catch(error => console.error('Error fetching email data:', error));
-    };
-
-    const fetchSocialAccounts = () => {
-        fetch(`${API_BASE}/rest-auth/admin-socialaccount/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    setSocialAccounts(data);
-                }
-            })
-            .catch(error => console.error('Error fetching social account data:', error));
-    };
-
-    const fetchTrips = () => {
-        fetch(`${API_BASE}/api/trips/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data.results)) {
-                    setTrips(data.results);
-                } else if (Array.isArray(data)) {
-                    setTrips(data);
-                }
-            })
-            .catch(error => console.error('Error fetching trips data:', error));
-    };
-
-    const fetchStops = () => {
-        fetch(`${API_BASE}/api/stops/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data.results)) {
-                    setStops(data.results);
-                } else if (Array.isArray(data)) {
-                    setStops(data);
-                }
-            })
-            .catch(error => console.error('Error fetching stops data:', error));
-    };
-
-    const fetchDailyLogs = () => {
-        fetch(`${API_BASE}/api/daily-logs/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data.results)) {
-                    setDailyLogs(data.results);
-                } else if (Array.isArray(data)) {
-                    setDailyLogs(data);
-                }
-            })
-            .catch(error => console.error('Error fetching daily logs data:', error));
-    };
 
     // Search handler
     const handleSearch = (table, value) => {
@@ -202,8 +67,8 @@ const Dashboard = ({ handleModal }) => {
     // Filter function
     const filterData = (data, query, searchFields) => {
         if (!query) return data;
-        return data.filter(item => 
-            searchFields.some(field => 
+        return data.filter(item =>
+            searchFields.some(field =>
                 String(item[field]).toLowerCase().includes(query.toLowerCase())
             )
         );
@@ -226,10 +91,9 @@ const Dashboard = ({ handleModal }) => {
         }));
     };
 
-    // Delete handlers
-    const handleDelete = (type, id) => {
+    const handleDelete = async (type, id) => {
         if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
-        
+
         const endpoints = {
             trip: `/api/trips/${id}/`,
             stop: `/api/stops/${id}/`,
@@ -240,55 +104,42 @@ const Dashboard = ({ handleModal }) => {
             socialAccount: `/rest-auth/admin-socialaccount/${id}/`
         };
 
-        fetch(`${API_BASE}${endpoints[type]}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(() => {
-                alert(`${type} deleted successfully!`);
-                switch(type) {
-                    case 'trip': 
-                        fetchTrips(); 
-                        break;
-                    case 'stop': 
-                        fetchStops(); 
-                        break;
-                    case 'dailyLog': 
-                        fetchDailyLogs(); 
-                        break;
-                    case 'user': 
-                        fetchUsers(); 
-                        break;
-                    case 'token': 
-                        fetchTokens(); 
-                        break;
-                    case 'email': 
-                        fetchEmails(); 
-                        break;
-                    case 'socialAccount': 
-                        fetchSocialAccounts(); 
-                        break;
-                    default:
-                        console.warn(`Unknown type: ${type}`);
-                        break;
+        const queryKeyMap = {
+            trip: 'trips',
+            stop: 'stops',
+            dailyLog: 'dailyLogs',
+            user: 'users',
+            token: 'tokens',
+            email: 'emails',
+            socialAccount: 'socialAccounts'
+        };
+
+        try {
+            await fetch(`${API_BASE}${endpoints[type]}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`
                 }
-            })
-            .catch(error => console.error(`Error deleting ${type}:`, error));
+            });
+
+            alert(`${type} deleted successfully!`);
+
+            // Invalidate only the relevant query
+            invalidateQueries([queryKeyMap[type]]);
+        } catch (error) {
+            console.error(`Error deleting ${type}:`, error);
+        }
     };
 
-    // Bulk delete handler
-    const handleBulkDelete = (table) => {
+    const handleBulkDelete = async (table) => {
         const items = selectedItems[table];
         if (items.length === 0) {
             alert('No items selected');
             return;
         }
-        
+
         if (!window.confirm(`Delete ${items.length} selected items?`)) return;
-        
-        setLoading(true);
+
         const typeMap = {
             trips: 'trip',
             stops: 'stop',
@@ -298,70 +149,56 @@ const Dashboard = ({ handleModal }) => {
             emails: 'email',
             socialAccounts: 'socialAccount'
         };
-        
-        Promise.all(
-            items.map(id => handleDelete(typeMap[table], id))
-        ).finally(() => {
+
+        try {
+            await Promise.all(
+                items.map(id => handleDelete(typeMap[table], id))
+            );
             setSelectedItems(prev => ({ ...prev, [table]: [] }));
-            setLoading(false);
-        });
+        } catch (error) {
+            console.error('Error in bulk delete:', error);
+        }
     };
 
-    // Trip handlers
-    const handleViewTrip = (tripId) => {
-        setLoading(true);
-        fetch(`${API_BASE}/api/trips/${tripId}/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                setSelectedTrip(data);
-                setShowTripDetails(true);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error fetching trip details:', error);
-                setLoading(false);
-            });
-    };
-
-    const handleRecalculateTrip = (tripId) => {
-        if (window.confirm('Recalculate route and logs for this trip?')) {
-            setLoading(true);
-            fetch(`${API_BASE}/api/trips/${tripId}/recalculate/`, {
-                method: 'POST',
+    const handleViewTrip = async (tripId) => {
+        try {
+            const response = await fetch(`${API_BASE}/api/trips/${tripId}/`, {
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('token')}`
                 }
-            })
-                .then(response => response.json())
-                .then(() => {
-                    fetchTrips();
-                    alert('Trip recalculated successfully!');
-                    setLoading(false);
-                })
-                .catch(error => {
-                    console.error('Error recalculating trip:', error);
-                    alert('Error recalculating trip');
-                    setLoading(false);
+            });
+            const data = await response.json();
+            setSelectedTrip(data);
+            setShowTripDetails(true);
+        } catch (error) {
+            console.error('Error fetching trip details:', error);
+        }
+    };
+
+    const handleRecalculateTrip = async (tripId) => {
+        if (window.confirm('Recalculate route and logs for this trip?')) {
+            try {
+                await fetch(`${API_BASE}/api/trips/${tripId}/recalculate/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${localStorage.getItem('token')}`
+                    }
                 });
+
+                // Invalidate trips, stops, and dailyLogs since they might have changed
+                invalidateQueries(['trips', 'stops', 'dailyLogs']);
+                alert('Trip recalculated successfully!');
+            } catch (error) {
+                console.error('Error recalculating trip:', error);
+                alert('Error recalculating trip');
+            }
         }
     };
 
     const handleTripCreated = () => {
-        setLoading(true)
-        fetchCurrentUser();
-        fetchUsers();
-        fetchTokens();
-        fetchEmails();
-        fetchSocialAccounts();
-        fetchTrips();
-        fetchStops();
-        fetchDailyLogs();
+        // Refresh all data after trip creation
+        invalidateAll();
         setShowTripForm(false);
-        setLoading(false)
     };
 
     // Dropdown toggle
@@ -372,9 +209,9 @@ const Dashboard = ({ handleModal }) => {
     // Render action dropdown
     const renderActionDropdown = (table) => (
         <div className="relative inline-block text-left">
-            <button 
+            <button
                 onClick={() => toggleDropdown(table)}
-                className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" 
+                className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
                 type="button"
             >
                 Actions
@@ -382,7 +219,7 @@ const Dashboard = ({ handleModal }) => {
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
                 </svg>
             </button>
-            
+
             {openDropdown === table && (
                 <div className="absolute left-0 z-10 mt-2 w-44 bg-white rounded-lg shadow-lg dark:bg-gray-700">
                     <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
@@ -416,11 +253,11 @@ const Dashboard = ({ handleModal }) => {
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                 </svg>
             </div>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 value={searchQueries[table]}
                 onChange={(e) => handleSearch(table, e.target.value)}
-                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder={placeholder}
             />
         </div>
@@ -456,12 +293,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={trip.id} className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-trip-${trip.id}`} 
-                        type="checkbox" 
+                    <input
+                        id={`checkbox-trip-${trip.id}`}
+                        type="checkbox"
                         checked={selectedItems.trips.includes(trip.id)}
                         onChange={() => handleSelectItem('trips', trip.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110"
                     />
                     <label htmlFor={`checkbox-trip-${trip.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -469,12 +306,11 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{trip.id}</td>
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{trip.username}</td>
             <td className="px-6 py-4">
-                <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                    trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                     trip.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                }`}>
+                        trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}>
                     {trip.status_display}
                 </span>
             </td>
@@ -487,19 +323,19 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{new Date(trip.created_at).toLocaleDateString()}</td>
             <td className="px-6 py-4">
                 <div className="flex items-center gap-2">
-                    <button 
+                    <button
                         onClick={() => handleViewTrip(trip.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
                     >
                         View
                     </button>
-                    <button 
+                    <button
                         onClick={() => handleRecalculateTrip(trip.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm"
                     >
                         Recalc
                     </button>
-                    <button 
+                    <button
                         onClick={() => handleDelete('trip', trip.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
                     >
@@ -529,12 +365,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={stop.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-stop-${stop.id}`} 
+                    <input
+                        id={`checkbox-stop-${stop.id}`}
                         type="checkbox"
                         checked={selectedItems.stops.includes(stop.id)}
                         onChange={() => handleSelectItem('stops', stop.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     />
                     <label htmlFor={`checkbox-stop-${stop.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -542,12 +378,11 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4">{stop.id}</td>
             <td className="px-6 py-4">{stop.trip}</td>
             <td className="px-6 py-4">
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    stop.stop_type === 'FUEL' ? 'bg-yellow-100 text-yellow-800' :
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${stop.stop_type === 'FUEL' ? 'bg-yellow-100 text-yellow-800' :
                     stop.stop_type === 'REST' ? 'bg-blue-100 text-blue-800' :
-                    stop.stop_type === 'OFF_DUTY' ? 'bg-purple-100 text-purple-800' :
-                    'bg-green-100 text-green-800'
-                }`}>
+                        stop.stop_type === 'OFF_DUTY' ? 'bg-purple-100 text-purple-800' :
+                            'bg-green-100 text-green-800'
+                    }`}>
                     {stop.stop_type_display}
                 </span>
             </td>
@@ -557,7 +392,7 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4">{stop.duration_minutes} min</td>
             <td className="px-6 py-4">{stop.distance_from_start} mi</td>
             <td className="px-6 py-4 flex gap-2">
-                <button 
+                <button
                     onClick={() => handleDelete('stop', stop.id)}
                     className="font-medium text-red-600 dark:text-red-500 hover:underline"
                 >
@@ -588,12 +423,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={log.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-log-${log.id}`} 
+                    <input
+                        id={`checkbox-log-${log.id}`}
                         type="checkbox"
                         checked={selectedItems.dailyLogs.includes(log.id)}
                         onChange={() => handleSelectItem('dailyLogs', log.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     />
                     <label htmlFor={`checkbox-log-${log.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -619,7 +454,7 @@ const Dashboard = ({ handleModal }) => {
                 )}
             </td>
             <td className="px-6 py-4 flex gap-2">
-                <button 
+                <button
                     onClick={() => handleDelete('dailyLog', log.id)}
                     className="font-medium text-red-600 dark:text-red-500 hover:underline"
                 >
@@ -649,12 +484,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={user.id} className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-user-${user.id}`} 
+                    <input
+                        id={`checkbox-user-${user.id}`}
                         type="checkbox"
                         checked={selectedItems.users.includes(user.id)}
                         onChange={() => handleSelectItem('users', user.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110"
                     />
                     <label htmlFor={`checkbox-user-${user.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -673,7 +508,7 @@ const Dashboard = ({ handleModal }) => {
                     <button className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm">
                         Edit
                     </button>
-                    <button 
+                    <button
                         onClick={() => handleDelete('user', user.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
                     >
@@ -699,12 +534,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={token.id} className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-token-${token.id}`} 
+                    <input
+                        id={`checkbox-token-${token.id}`}
                         type="checkbox"
                         checked={selectedItems.tokens.includes(token.id)}
                         onChange={() => handleSelectItem('tokens', token.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110"
                     />
                     <label htmlFor={`checkbox-token-${token.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -714,7 +549,7 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4 font-mono text-xs text-gray-700 dark:text-gray-300">{token.key}</td>
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{new Date(token.created).toLocaleString()}</td>
             <td className="px-6 py-4">
-                <button 
+                <button
                     onClick={() => handleDelete('token', token.id)}
                     className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
                 >
@@ -739,12 +574,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={email.id} className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-email-${email.id}`} 
+                    <input
+                        id={`checkbox-email-${email.id}`}
                         type="checkbox"
                         checked={selectedItems.emails.includes(email.id)}
                         onChange={() => handleSelectItem('emails', email.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110"
                     />
                     <label htmlFor={`checkbox-email-${email.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -754,7 +589,7 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{email.verified ? 'Yes' : 'No'}</td>
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{email.primary ? 'Yes' : 'No'}</td>
             <td className="px-6 py-4">
-                <button 
+                <button
                     onClick={() => handleDelete('email', email.id)}
                     className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
                 >
@@ -781,12 +616,12 @@ const Dashboard = ({ handleModal }) => {
         <tr key={account.id} className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-social-${account.id}`} 
+                    <input
+                        id={`checkbox-social-${account.id}`}
                         type="checkbox"
                         checked={selectedItems.socialAccounts.includes(account.id)}
                         onChange={() => handleSelectItem('socialAccounts', account.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110"
                     />
                     <label htmlFor={`checkbox-social-${account.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -798,7 +633,7 @@ const Dashboard = ({ handleModal }) => {
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{account.last_login ? new Date(account.last_login).toLocaleString() : 'Never'}</td>
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{new Date(account.date_joined).toLocaleDateString()}</td>
             <td className="px-6 py-4">
-                <button 
+                <button
                     onClick={() => handleDelete('socialAccount', account.id)}
                     className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
                 >
@@ -811,7 +646,7 @@ const Dashboard = ({ handleModal }) => {
     return (
         <>
             <main id="main">
-                <TopBar 
+                <TopBar
                     onLogout={handleModal}
                     onOpenSettings={() => setShowProfileSettings(true)}
                 />
@@ -819,7 +654,7 @@ const Dashboard = ({ handleModal }) => {
                 <section className="dashboard-content">
                     <div className="container mx-auto px-4">
                         {/* Loading Overlay */}
-                        {loading && (
+                        {isLoading && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                                 <div className="bg-white p-6 rounded-lg">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -982,12 +817,11 @@ const Dashboard = ({ handleModal }) => {
                                     <div className="space-y-3 max-h-80 overflow-y-auto">
                                         {trips.slice(0, 5).map((trip, index) => (
                                             <div key={trip.id} className="flex items-start gap-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                                                    trip.status === 'COMPLETED' ? 'bg-green-500' :
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${trip.status === 'COMPLETED' ? 'bg-green-500' :
                                                     trip.status === 'IN_PROGRESS' ? 'bg-blue-500' :
-                                                    trip.status === 'CANCELLED' ? 'bg-red-500' :
-                                                    'bg-gray-500'
-                                                }`}>
+                                                        trip.status === 'CANCELLED' ? 'bg-red-500' :
+                                                            'bg-gray-500'
+                                                    }`}>
                                                     {index + 1}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -995,12 +829,11 @@ const Dashboard = ({ handleModal }) => {
                                                         <p className="font-semibold text-gray-900 dark:text-white truncate">
                                                             Trip #{trip.id} - {trip.username}
                                                         </p>
-                                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                                                            trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                                                             trip.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                                            trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                                        }`}>
+                                                                trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                            }`}>
                                                             {trip.status_display}
                                                         </span>
                                                     </div>
@@ -1045,7 +878,7 @@ const Dashboard = ({ handleModal }) => {
                                             </span>
                                         </div>
                                         <div className="overflow-hidden h-2 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
-                                            <div 
+                                            <div
                                                 style={{ width: `${dailyLogs.length > 0 ? ((dailyLogs.length - dailyLogs.filter(l => l.has_violation).length) / dailyLogs.length) * 100 : 100}%` }}
                                                 className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500 transition-all duration-500"
                                             ></div>
@@ -1145,10 +978,10 @@ const Dashboard = ({ handleModal }) => {
                                     {renderActionDropdown('trips')}
                                     {renderSearchInput('trips', 'Search trips...')}
                                 </div>
-                                <Table 
-                                    title="All Trips" 
+                                <Table
+                                    title="All Trips"
                                     subtitle={`Manage and monitor all trip records`}
-                                    columns={tripColumns} 
+                                    columns={tripColumns}
                                     rows={tripRows}
                                     onSelectAll={() => handleSelectAll('trips', filteredTrips.map(t => t.id))}
                                     allSelected={selectedItems.trips.length === filteredTrips.length && filteredTrips.length > 0}
@@ -1164,10 +997,10 @@ const Dashboard = ({ handleModal }) => {
                                     {renderActionDropdown('stops')}
                                     {renderSearchInput('stops', 'Search stops...')}
                                 </div>
-                                <Table 
-                                    title="All Stops" 
+                                <Table
+                                    title="All Stops"
                                     subtitle={`View all stop points along routes`}
-                                    columns={stopColumns} 
+                                    columns={stopColumns}
                                     rows={stopRows}
                                     onSelectAll={() => handleSelectAll('stops', filteredStops.map(s => s.id))}
                                     allSelected={selectedItems.stops.length === filteredStops.length && filteredStops.length > 0}
@@ -1183,10 +1016,10 @@ const Dashboard = ({ handleModal }) => {
                                     {renderActionDropdown('dailyLogs')}
                                     {renderSearchInput('dailyLogs', 'Search logs...')}
                                 </div>
-                                <Table 
-                                    title="All Daily Logs" 
+                                <Table
+                                    title="All Daily Logs"
                                     subtitle={`Track driver hours and compliance`}
-                                    columns={dailyLogColumns} 
+                                    columns={dailyLogColumns}
                                     rows={dailyLogRows}
                                     onSelectAll={() => handleSelectAll('dailyLogs', filteredDailyLogs.map(l => l.id))}
                                     allSelected={selectedItems.dailyLogs.length === filteredDailyLogs.length && filteredDailyLogs.length > 0}
@@ -1200,17 +1033,17 @@ const Dashboard = ({ handleModal }) => {
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                                 User & System Management
                             </h2>
-                            
+
                             {/* User Table */}
                             <div className="mb-8 relative overflow-x-auto">
                                 <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 px-2">
                                     {renderActionDropdown('users')}
                                     {renderSearchInput('users', 'Search users...')}
                                 </div>
-                                <Table 
-                                    title="User Management" 
+                                <Table
+                                    title="User Management"
                                     subtitle={`Manage system users and permissions`}
-                                    columns={userColumns} 
+                                    columns={userColumns}
                                     rows={userRows}
                                     onSelectAll={() => handleSelectAll('users', filteredUsers.map(u => u.id))}
                                     allSelected={selectedItems.users.length === filteredUsers.length && filteredUsers.length > 0}
@@ -1224,10 +1057,10 @@ const Dashboard = ({ handleModal }) => {
                                     {renderActionDropdown('tokens')}
                                     {renderSearchInput('tokens', 'Search tokens...')}
                                 </div>
-                                <Table 
-                                    title="Token Management" 
+                                <Table
+                                    title="Token Management"
                                     subtitle={`Manage authentication tokens`}
-                                    columns={tokenColumns} 
+                                    columns={tokenColumns}
                                     rows={tokenRows}
                                     onSelectAll={() => handleSelectAll('tokens', filteredTokens.map(t => t.id))}
                                     allSelected={selectedItems.tokens.length === filteredTokens.length && filteredTokens.length > 0}
@@ -1241,10 +1074,10 @@ const Dashboard = ({ handleModal }) => {
                                     {renderActionDropdown('emails')}
                                     {renderSearchInput('emails', 'Search emails...')}
                                 </div>
-                                <Table 
-                                    title="Email Management" 
+                                <Table
+                                    title="Email Management"
                                     subtitle={`Manage user email addresses`}
-                                    columns={emailColumns} 
+                                    columns={emailColumns}
                                     rows={emailRows}
                                     onSelectAll={() => handleSelectAll('emails', filteredEmails.map(e => e.id))}
                                     allSelected={selectedItems.emails.length === filteredEmails.length && filteredEmails.length > 0}
@@ -1258,10 +1091,10 @@ const Dashboard = ({ handleModal }) => {
                                     {renderActionDropdown('socialAccounts')}
                                     {renderSearchInput('socialAccounts', 'Search accounts...')}
                                 </div>
-                                <Table 
-                                    title="Social Account Management" 
+                                <Table
+                                    title="Social Account Management"
                                     subtitle={`Manage social authentication accounts`}
-                                    columns={socialAccountColumns} 
+                                    columns={socialAccountColumns}
                                     rows={socialAccountRows}
                                     onSelectAll={() => handleSelectAll('socialAccounts', filteredSocialAccounts.map(a => a.id))}
                                     allSelected={selectedItems.socialAccounts.length === filteredSocialAccounts.length && filteredSocialAccounts.length > 0}
@@ -1275,8 +1108,8 @@ const Dashboard = ({ handleModal }) => {
 
             {/* Trip Details Modal */}
             {showTripDetails && selectedTrip && (
-                <TripDetailsModal 
-                    trip={selectedTrip} 
+                <TripDetailsModal
+                    trip={selectedTrip}
                     onClose={() => {
                         setShowTripDetails(false);
                         setSelectedTrip(null);
@@ -1286,10 +1119,10 @@ const Dashboard = ({ handleModal }) => {
 
             {/* Profile Settings Modal */}
             {showProfileSettings && currentUser && (
-                <ProfileSettings 
+                <ProfileSettings
                     user={currentUser}
                     onClose={() => setShowProfileSettings(false)}
-                    onUpdate={fetchCurrentUser}
+                    onUpdate={refetchCurrentUser}
                 />
             )}
         </>

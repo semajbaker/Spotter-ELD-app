@@ -34,8 +34,8 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 // Set superuser status
                 const isSuperuser = response.data.is_superuser === true;
                 if (isSuperuser) {
-                    let authAdmin = localStorage.setItem('is_superuser', true);
-                    setSuperuser(authAdmin);
+                    localStorage.setItem('is_superuser', true);
+                    setSuperuser(true);
                 } else {
                     localStorage.setItem('is_superuser', false);
                     setSuperuser(false);
@@ -193,10 +193,10 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
     const facebookAuth = () => {
         localStorage.setItem("socialAuth", "facebook");
         const clientID = process.env.REACT_APP_FACEBOOK_OAUTH_CLIENT_ID;
-        const callBackURI = `${CALLBACK_URI}/facebook`;
-        const state = "state123abc"; // optional
+        const callBackURI = encodeURIComponent(`${CALLBACK_URI}/`); // Add encoding
+        const state = "state123abc";
         window.location.replace(
-            `https://www.facebook.com/v10.0/dialog/oauth?client_id=${clientID}&redirect_uri=${encodeURIComponent(callBackURI)}&state=${state}&response_type=code&scope=email,public_profile`
+            `https://www.facebook.com/v10.0/dialog/oauth?client_id=${clientID}&redirect_uri=${callBackURI}&state=${state}&response_type=code&scope=email,public_profile`
         );
     };
 

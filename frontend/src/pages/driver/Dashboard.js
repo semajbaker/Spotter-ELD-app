@@ -1,6 +1,6 @@
 // frontend/src/pages/driver/Dashboard.js
-
-import { useEffect, useState } from 'react';
+import { useDashboardData } from '../../hooks/useDashboardData';
+import { useState } from 'react';
 import SideNav from "../../components/driver/SideNav";
 import TopBar from "../../components/driver/TopBar";
 import Table from "../../components/Table";
@@ -11,112 +11,39 @@ import ProfileSettings from "../../components/ProfileSettings";
 const API_BASE = process.env.REACT_APP_API_URL;
 
 const DriverDashboard = (props) => {
-    // User state
-    const [currentUser, setCurrentUser] = useState(null);
-    
-    // ELD Trip state
-    const [trips, setTrips] = useState([]);
-    const [stops, setStops] = useState([]);
-    const [dailyLogs, setDailyLogs] = useState([]);
-    
+    // Get all data from the custom hook
+    const {
+        currentUser,
+        trips,
+        stops,
+        dailyLogs,
+        isLoading,
+        invalidate,
+        invalidateQueries,
+        refetchCurrentUser
+    } = useDashboardData();
     // UI state
     const [showTripForm, setShowTripForm] = useState(false);
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [showTripDetails, setShowTripDetails] = useState(false);
     const [showProfileSettings, setShowProfileSettings] = useState(false);
-    const [loading, setLoading] = useState(false);
-    
+
     // Search state
     const [searchQueries, setSearchQueries] = useState({
         trips: '',
         stops: '',
         dailyLogs: ''
     });
-    
+
     // Selected items for bulk actions
     const [selectedItems, setSelectedItems] = useState({
         trips: [],
         stops: [],
         dailyLogs: []
     });
-    
+
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState(null);
-
-    // Fetch Current User Profile
-    useEffect(() => {
-        setLoading(true);
-        fetchCurrentUser();
-        fetchTrips();
-        fetchStops();
-        setLoading(false);
-    }, []);
-
-    const fetchCurrentUser = () => {
-        fetch(`${API_BASE}/rest-auth/user/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                setCurrentUser(data);
-            })
-            .catch(error => console.error('Error fetching user data:', error));
-    };
-
-    const fetchTrips = () => {
-        fetch(`${API_BASE}/api/trips/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data.results)) {
-                    setTrips(data.results);
-                } else if (Array.isArray(data)) {
-                    setTrips(data);
-                }
-            })
-            .catch(error => console.error('Error fetching trips data:', error));
-    };
-
-    const fetchStops = () => {
-        fetch(`${API_BASE}/api/stops/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data.results)) {
-                    setStops(data.results);
-                } else if (Array.isArray(data)) {
-                    setStops(data);
-                }
-            })
-            .catch(error => console.error('Error fetching stops data:', error));
-    };
-
-
-    const fetchDailyLogs = () => {
-        fetch(`${API_BASE}/api/daily-logs/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data.results)) {
-                    setDailyLogs(data.results);
-                } else if (Array.isArray(data)) {
-                    setDailyLogs(data);
-                }
-            })
-            .catch(error => console.error('Error fetching daily logs data:', error));
-    };
-
     // Search handler
     const handleSearch = (table, value) => {
         setSearchQueries(prev => ({ ...prev, [table]: value }));
@@ -125,8 +52,8 @@ const DriverDashboard = (props) => {
     // Filter function
     const filterData = (data, query, searchFields) => {
         if (!query) return data;
-        return data.filter(item => 
-            searchFields.some(field => 
+        return data.filter(item =>
+            searchFields.some(field =>
                 String(item[field]).toLowerCase().includes(query.toLowerCase())
             )
         );
@@ -149,113 +76,103 @@ const DriverDashboard = (props) => {
         }));
     };
 
-    // Delete handlers
-    const handleDelete = (type, id) => {
+    const handleDelete = async (type, id) => {
         if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
-        
+
         const endpoints = {
             trip: `/api/trips/${id}/`,
             stop: `/api/stops/${id}/`,
             dailyLog: `/api/daily-logs/${id}/`
         };
 
-        fetch(`${API_BASE}${endpoints[type]}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(() => {
-                alert(`${type} deleted successfully!`);
-                switch(type) {
-                    case 'trip': 
-                        fetchTrips(); 
-                        break;
-                    case 'stop': 
-                        fetchStops(); 
-                        break;
-                    case 'dailyLog': 
-                        fetchDailyLogs(); 
-                        break;
-                    default:
-                        break;
+        const queryKeyMap = {
+            trip: 'trips',
+            stop: 'stops',
+            dailyLog: 'dailyLogs'
+        };
+
+        try {
+            await fetch(`${API_BASE}${endpoints[type]}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`
                 }
-            })
-            .catch(error => console.error(`Error deleting ${type}:`, error));
+            });
+
+            alert(`${type} deleted successfully!`);
+
+            // Invalidate only the relevant query
+            invalidateQueries([queryKeyMap[type]]);
+        } catch (error) {
+            console.error(`Error deleting ${type}:`, error);
+        }
     };
 
     // Bulk delete handler
-    const handleBulkDelete = (table) => {
+    const handleBulkDelete = async (table) => {
         const items = selectedItems[table];
         if (items.length === 0) {
             alert('No items selected');
             return;
         }
-        
+
         if (!window.confirm(`Delete ${items.length} selected items?`)) return;
-        
-        setLoading(true);
+
         const typeMap = {
             trips: 'trip',
             stops: 'stop',
             dailyLogs: 'dailyLog'
         };
-        
-        Promise.all(
-            items.map(id => handleDelete(typeMap[table], id))
-        ).finally(() => {
+
+        try {
+            await Promise.all(
+                items.map(id => handleDelete(typeMap[table], id))
+            );
             setSelectedItems(prev => ({ ...prev, [table]: [] }));
-            setLoading(false);
-        });
+        } catch (error) {
+            console.error('Error in bulk delete:', error);
+        }
     };
 
     // Trip handlers
-    const handleViewTrip = (tripId) => {
-        setLoading(true);
-        fetch(`${API_BASE}/api/trips/${tripId}/`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('token')}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                setSelectedTrip(data);
-                setShowTripDetails(true);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error fetching trip details:', error);
-                setLoading(false);
-            });
-    };
-
-    const handleRecalculateTrip = (tripId) => {
-        if (window.confirm('Recalculate route and logs for this trip?')) {
-            setLoading(true);
-            fetch(`${API_BASE}/api/trips/${tripId}/recalculate/`, {
-                method: 'POST',
+    const handleViewTrip = async (tripId) => {
+        try {
+            const response = await fetch(`${API_BASE}/api/trips/${tripId}/`, {
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('token')}`
                 }
-            })
-                .then(response => response.json())
-                .then(() => {
-                    fetchTrips();
-                    alert('Trip recalculated successfully!');
-                    setLoading(false);
-                })
-                .catch(error => {
-                    console.error('Error recalculating trip:', error);
-                    alert('Error recalculating trip');
-                    setLoading(false);
+            });
+            const data = await response.json();
+            setSelectedTrip(data);
+            setShowTripDetails(true);
+        } catch (error) {
+            console.error('Error fetching trip details:', error);
+        }
+    };
+
+    const handleRecalculateTrip = async (tripId) => {
+        if (window.confirm('Recalculate route and logs for this trip?')) {
+            try {
+                await fetch(`${API_BASE}/api/trips/${tripId}/recalculate/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${localStorage.getItem('token')}`
+                    }
                 });
+
+                // Invalidate trips, stops, and dailyLogs since they might have changed
+                invalidateQueries(['trips', 'stops', 'dailyLogs']);
+                alert('Trip recalculated successfully!');
+            } catch (error) {
+                console.error('Error recalculating trip:', error);
+                alert('Error recalculating trip');
+            }
         }
     };
 
     const handleTripCreated = () => {
-        fetchTrips();
-        fetchDailyLogs();
-        
+        // Refresh all data after trip creation
+        invalidate();
         setShowTripForm(false);
     };
 
@@ -267,9 +184,9 @@ const DriverDashboard = (props) => {
     // Render action dropdown
     const renderActionDropdown = (table) => (
         <div className="relative inline-block text-left">
-            <button 
+            <button
                 onClick={() => toggleDropdown(table)}
-                className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" 
+                className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
                 type="button"
             >
                 Actions
@@ -277,7 +194,7 @@ const DriverDashboard = (props) => {
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
                 </svg>
             </button>
-            
+
             {openDropdown === table && (
                 <div className="absolute left-0 z-10 mt-2 w-44 bg-white rounded-lg shadow-lg dark:bg-gray-700">
                     <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
@@ -311,11 +228,11 @@ const DriverDashboard = (props) => {
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                 </svg>
             </div>
-            <input 
-                type="text" 
+            <input
+                type="text"
                 value={searchQueries[table]}
                 onChange={(e) => handleSearch(table, e.target.value)}
-                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder={placeholder}
             />
         </div>
@@ -346,24 +263,23 @@ const DriverDashboard = (props) => {
         <tr key={trip.id} className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-trip-${trip.id}`} 
-                        type="checkbox" 
+                    <input
+                        id={`checkbox-trip-${trip.id}`}
+                        type="checkbox"
                         checked={selectedItems.trips.includes(trip.id)}
                         onChange={() => handleSelectItem('trips', trip.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer transition-all hover:scale-110"
                     />
                     <label htmlFor={`checkbox-trip-${trip.id}`} className="sr-only">checkbox</label>
                 </div>
             </td>
             <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{trip.id}</td>
             <td className="px-6 py-4">
-                <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                    trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                     trip.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                }`}>
+                        trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}>
                     {trip.status_display}
                 </span>
             </td>
@@ -376,19 +292,19 @@ const DriverDashboard = (props) => {
             <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{new Date(trip.created_at).toLocaleDateString()}</td>
             <td className="px-6 py-4">
                 <div className="flex items-center gap-2">
-                    <button 
+                    <button
                         onClick={() => handleViewTrip(trip.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
                     >
                         View
                     </button>
-                    <button 
+                    <button
                         onClick={() => handleRecalculateTrip(trip.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors shadow-sm"
                     >
                         Recalc
                     </button>
-                    <button 
+                    <button
                         onClick={() => handleDelete('trip', trip.id)}
                         className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
                     >
@@ -418,12 +334,12 @@ const DriverDashboard = (props) => {
         <tr key={stop.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-stop-${stop.id}`} 
+                    <input
+                        id={`checkbox-stop-${stop.id}`}
                         type="checkbox"
                         checked={selectedItems.stops.includes(stop.id)}
                         onChange={() => handleSelectItem('stops', stop.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     />
                     <label htmlFor={`checkbox-stop-${stop.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -431,12 +347,11 @@ const DriverDashboard = (props) => {
             <td className="px-6 py-4">{stop.id}</td>
             <td className="px-6 py-4">{stop.trip}</td>
             <td className="px-6 py-4">
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    stop.stop_type === 'FUEL' ? 'bg-yellow-100 text-yellow-800' :
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${stop.stop_type === 'FUEL' ? 'bg-yellow-100 text-yellow-800' :
                     stop.stop_type === 'REST' ? 'bg-blue-100 text-blue-800' :
-                    stop.stop_type === 'OFF_DUTY' ? 'bg-purple-100 text-purple-800' :
-                    'bg-green-100 text-green-800'
-                }`}>
+                        stop.stop_type === 'OFF_DUTY' ? 'bg-purple-100 text-purple-800' :
+                            'bg-green-100 text-green-800'
+                    }`}>
                     {stop.stop_type_display}
                 </span>
             </td>
@@ -446,7 +361,7 @@ const DriverDashboard = (props) => {
             <td className="px-6 py-4">{stop.duration_minutes} min</td>
             <td className="px-6 py-4">{stop.distance_from_start} mi</td>
             <td className="px-6 py-4 flex gap-2">
-                <button 
+                <button
                     onClick={() => handleDelete('stop', stop.id)}
                     className="font-medium text-red-600 dark:text-red-500 hover:underline"
                 >
@@ -476,12 +391,12 @@ const DriverDashboard = (props) => {
         <tr key={log.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td className="w-4 p-4">
                 <div className="flex items-center">
-                    <input 
-                        id={`checkbox-log-${log.id}`} 
+                    <input
+                        id={`checkbox-log-${log.id}`}
                         type="checkbox"
                         checked={selectedItems.dailyLogs.includes(log.id)}
                         onChange={() => handleSelectItem('dailyLogs', log.id)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     />
                     <label htmlFor={`checkbox-log-${log.id}`} className="sr-only">checkbox</label>
                 </div>
@@ -506,7 +421,7 @@ const DriverDashboard = (props) => {
                 )}
             </td>
             <td className="px-6 py-4 flex gap-2">
-                <button 
+                <button
                     onClick={() => handleDelete('dailyLog', log.id)}
                     className="font-medium text-red-600 dark:text-red-500 hover:underline"
                 >
@@ -519,8 +434,8 @@ const DriverDashboard = (props) => {
     return (
         <>
             <main id="main">
-                <TopBar 
-                    currentUser={currentUser} 
+                <TopBar
+                    currentUser={currentUser}
                     onLogout={props.onLogout}
                     onOpenSettings={() => setShowProfileSettings(true)}
                 />
@@ -528,7 +443,7 @@ const DriverDashboard = (props) => {
                 <section className="dashboard-content">
                     <div className="container mx-auto px-4">
                         {/* Loading Overlay */}
-                        {loading && (
+                        {isLoading && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                                 <div className="bg-white p-6 rounded-lg">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -694,12 +609,11 @@ const DriverDashboard = (props) => {
                                     <div className="space-y-3 max-h-80 overflow-y-auto">
                                         {trips.slice(0, 5).map((trip, index) => (
                                             <div key={trip.id} className="flex items-start gap-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                                                    trip.status === 'COMPLETED' ? 'bg-green-500' :
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${trip.status === 'COMPLETED' ? 'bg-green-500' :
                                                     trip.status === 'IN_PROGRESS' ? 'bg-blue-500' :
-                                                    trip.status === 'CANCELLED' ? 'bg-red-500' :
-                                                    'bg-gray-500'
-                                                }`}>
+                                                        trip.status === 'CANCELLED' ? 'bg-red-500' :
+                                                            'bg-gray-500'
+                                                    }`}>
                                                     {index + 1}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -707,12 +621,11 @@ const DriverDashboard = (props) => {
                                                         <p className="font-semibold text-gray-900 dark:text-white truncate">
                                                             Trip #{trip.id}
                                                         </p>
-                                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                                                            trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${trip.status === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                                                             trip.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                                            trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                                        }`}>
+                                                                trip.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                            }`}>
                                                             {trip.status_display}
                                                         </span>
                                                     </div>
@@ -772,10 +685,10 @@ const DriverDashboard = (props) => {
                                     {renderActionDropdown('trips')}
                                     {renderSearchInput('trips', 'Search my trips...')}
                                 </div>
-                                <Table 
-                                    title="My Trips" 
+                                <Table
+                                    title="My Trips"
                                     subtitle={`All your trip records`}
-                                    columns={tripColumns} 
+                                    columns={tripColumns}
                                     rows={tripRows}
                                     onSelectAll={() => handleSelectAll('trips', filteredTrips.map(t => t.id))}
                                     allSelected={selectedItems.trips.length === filteredTrips.length && filteredTrips.length > 0}
@@ -791,10 +704,10 @@ const DriverDashboard = (props) => {
                                     {renderActionDropdown('stops')}
                                     {renderSearchInput('stops', 'Search stops...')}
                                 </div>
-                                <Table 
-                                    title="My Stops" 
+                                <Table
+                                    title="My Stops"
                                     subtitle={`View all stop points along your routes`}
-                                    columns={stopColumns} 
+                                    columns={stopColumns}
                                     rows={stopRows}
                                     onSelectAll={() => handleSelectAll('stops', filteredStops.map(s => s.id))}
                                     allSelected={selectedItems.stops.length === filteredStops.length && filteredStops.length > 0}
@@ -810,10 +723,10 @@ const DriverDashboard = (props) => {
                                     {renderActionDropdown('dailyLogs')}
                                     {renderSearchInput('dailyLogs', 'Search logs...')}
                                 </div>
-                                <Table 
-                                    title="My Daily Logs" 
+                                <Table
+                                    title="My Daily Logs"
                                     subtitle={`Track your hours and stay compliant`}
-                                    columns={dailyLogColumns} 
+                                    columns={dailyLogColumns}
                                     rows={dailyLogRows}
                                     onSelectAll={() => handleSelectAll('dailyLogs', filteredDailyLogs.map(l => l.id))}
                                     allSelected={selectedItems.dailyLogs.length === filteredDailyLogs.length && filteredDailyLogs.length > 0}
@@ -827,8 +740,8 @@ const DriverDashboard = (props) => {
 
             {/* Trip Details Modal */}
             {showTripDetails && selectedTrip && (
-                <TripDetailsModal 
-                    trip={selectedTrip} 
+                <TripDetailsModal
+                    trip={selectedTrip}
                     onClose={() => {
                         setShowTripDetails(false);
                         setSelectedTrip(null);
@@ -838,10 +751,10 @@ const DriverDashboard = (props) => {
 
             {/* Profile Settings Modal */}
             {showProfileSettings && currentUser && (
-                <ProfileSettings 
+                <ProfileSettings
                     user={currentUser}
                     onClose={() => setShowProfileSettings(false)}
-                    onUpdate={fetchCurrentUser}
+                    onUpdate={refetchCurrentUser}
                 />
             )}
         </>
