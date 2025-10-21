@@ -32,8 +32,11 @@ const Navbar = (props) => {
       setActiveSection(currentSection);
     };
     const handleClickOutside = (event) => {
-      if (display && !event.target.closest('.navbar_toggle')) {
-        setDisplay(false);
+      if (display && 
+          !event.target.closest('.navbar_toggle') && 
+          !event.target.closest('.navbar_links') &&
+          !event.target.closest('.logo_link')) {
+        closeMobileMenu();
       }
     };
 
@@ -51,7 +54,13 @@ const Navbar = (props) => {
     setDisplay(!display);
   };
 
+  const closeMobileMenu = () => {
+    setNav('');
+    setDisplay(false);
+  };
+
   const handleClick = (section) => {
+    closeMobileMenu();
     navigate('/');
     setTimeout(() => {
       document.getElementById(section).scrollIntoView({ behavior: 'smooth' });
@@ -67,7 +76,13 @@ const Navbar = (props) => {
     <nav className="navbar" style={{ zIndex: 9999, position: 'fixed', width: '100%', top: 0 }}>
       <div className="navbar_container">
         <div className="logo_container">
-          <ScrollLink className="logo_link" to="home" smooth={true} duration={500}>
+          <ScrollLink 
+            className="logo_link" 
+            to="home" 
+            smooth={true} 
+            duration={500}
+            onClick={closeMobileMenu}
+          >
             <img src={Logo} className="logo" alt="logo"></img>
           </ScrollLink>
         </div>

@@ -212,6 +212,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 title={
                     <h4 className="mt-4 mb-6 pb-2">{isLogin ? "Sign In" : forgotPassword ? "Password Reset" : "Sign Up"}</h4>
                 }
+                onClose={() => setFormShow(false)}
                 signinOptions={
                     isLogin && (
                         <>
