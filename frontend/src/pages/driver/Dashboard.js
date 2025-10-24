@@ -1,8 +1,8 @@
 // frontend/src/pages/driver/Dashboard.js
 import { useDashboardData } from '../../hooks/useDashboardData';
-import { useState } from 'react';
-import SideNav from "../../components/driver/SideNav";
-import TopBar from "../../components/driver/TopBar";
+import { useState, useEffect } from 'react';
+import DriverSideNav from "../../components/driver/SideNav";
+import DriverTopBar from "../../components/driver/TopBar";
 import Table from "../../components/Table";
 import TripForm from "../../components/eld/TripForm";
 import TripDetailsModal from "../../components/eld/TripDetailsModal";
@@ -10,7 +10,7 @@ import ProfileSettings from "../../components/ProfileSettings";
 
 const API_BASE = process.env.REACT_APP_API_URL;
 
-const DriverDashboard = (props) => {
+const DriverDashboard = ({ onLogout }) => {
     // Get all data from the custom hook
     const {
         currentUser,
@@ -27,7 +27,35 @@ const DriverDashboard = (props) => {
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [showTripDetails, setShowTripDetails] = useState(false);
     const [showProfileSettings, setShowProfileSettings] = useState(false);
+    const [isMobileNavActive, setIsMobileNavActive] = useState(false);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                isMobileNavActive &&
+                !event.target.closest('#header') &&
+                !event.target.closest('.dashboard-topbar')
+            ) {
+                setIsMobileNavActive(false);
+                document.body.classList.remove('mobile-nav-active');
+            }
+        };
 
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [isMobileNavActive]);
+
+    const handleToggleMobileNav = (event) => {
+        if (event && event.stopPropagation) event.stopPropagation();
+        const next = !isMobileNavActive;
+        setIsMobileNavActive(next);
+        if (next) document.body.classList.add('mobile-nav-active');
+        else document.body.classList.remove('mobile-nav-active');
+    };
+
+    const handleCloseMobileNav = () => {
+        setIsMobileNavActive(false);
+        document.body.classList.remove('mobile-nav-active');
+    }
     // Search state
     const [searchQueries, setSearchQueries] = useState({
         trips: '',
@@ -434,12 +462,17 @@ const DriverDashboard = (props) => {
     return (
         <>
             <main id="main">
-                <TopBar
-                    currentUser={currentUser}
-                    onLogout={props.onLogout}
+                <DriverTopBar
+                    onToggleMobileNav={handleToggleMobileNav}
+                    isMobileNavActive={isMobileNavActive}
+                    onLogout={onLogout}
                     onOpenSettings={() => setShowProfileSettings(true)}
                 />
-                <SideNav onLogout={props.onLogout} />
+                <DriverSideNav
+                    isMobileNavActive={isMobileNavActive}
+                    onCloseMobileNav={handleCloseMobileNav}
+                    onLogout={onLogout} />
+
                 <section className="dashboard-content">
                     <div className="container mx-auto px-4">
                         {/* Loading Overlay */}

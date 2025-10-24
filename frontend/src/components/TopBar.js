@@ -1,13 +1,12 @@
 // frontend/src/components/TopBar.js
-
 import { useState, useEffect } from 'react';
 import * as fa from 'react-icons/fa';
+import * as bs from 'react-icons/bs';
 const API_BASE = process.env.REACT_APP_API_URL;
 
-const TopBar = ({ onLogout, onOpenSettings }) => {
+const TopBar = ({ onLogout, onOpenSettings, onToggleMobileNav, isMobileNavActive }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
-
     // Fetch current user data
     useEffect(() => {
         const fetchCurrentUser = () => {
@@ -29,8 +28,17 @@ const TopBar = ({ onLogout, onOpenSettings }) => {
     return (
         <nav className="dashboard-topbar bg-white dark:bg-gray-800 shadow-md px-6 py-4 fixed top-0 right-0 left-0 z-40 xl:left-[300px]">
             <div className="flex justify-between items-center">
-                {/* Left side - Page title */}
+                {/* Left side - Mobile nav toggle & Page title */}
                 <div className="flex items-center gap-4">
+                    {/* Mobile nav toggle button */}
+                    <button
+                        onClick={onToggleMobileNav}
+                        className="xl:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-2xl text-gray-700 dark:text-gray-300"
+                        aria-label="Toggle mobile navigation"
+                    >
+                        {isMobileNavActive ? <bs.BsX /> : <bs.BsList />}
+                    </button>
+
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Admin Dashboard
                     </h2>

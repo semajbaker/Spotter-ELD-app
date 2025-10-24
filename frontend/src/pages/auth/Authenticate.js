@@ -24,22 +24,22 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
         const loginData = { 'username': username, 'password': password };
         axios.post(`${API_BASE}/rest-auth/signin/`, loginData)
             .then(response => {
-                let authToken = localStorage.setItem('token', response.data.token);
-                setToken(authToken);
-                let authId = localStorage.setItem('user_id', response.data.user_id);
-                setId(authId);
-                let authUser = localStorage.setItem('user', username);
-                setUser(authUser);
+                // Store token
+                localStorage.setItem('token', response.data.token);
+                setToken(response.data.token);
 
-                // Set superuser status
-                const isSuperuser = response.data.is_superuser === true;
-                if (isSuperuser) {
-                    localStorage.setItem('is_superuser', true);
-                    setSuperuser(true);
-                } else {
-                    localStorage.setItem('is_superuser', false);
-                    setSuperuser(false);
-                }
+                // Store user ID - FIXED: access from response.data.user.id
+                localStorage.setItem('user_id', response.data.user.id);
+                setId(response.data.user.id);
+
+                // Store username
+                localStorage.setItem('user', username);
+                setUser(username);
+
+                // Set superuser status - FIXED: access from response.data.user.is_superuser
+                const isSuperuser = response.data.user.is_superuser === true;
+                localStorage.setItem('is_superuser', isSuperuser);
+                setSuperuser(isSuperuser);
 
                 setShow(true);
                 setTimeout(() => setShow(false), 3500);
@@ -64,12 +64,14 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 let errorMessage = 'Invalid credentials. Please try again.';
                 if (err.response && err.response.data) {
                     const error = err.response.data;
-                    if (error.non_field_errors) {
+
+                    // This will catch your 'Please verify your email' message
+                    if (error.detail) {
+                        errorMessage = error.detail;
+                    } else if (error.non_field_errors) {
                         errorMessage = Array.isArray(error.non_field_errors)
                             ? error.non_field_errors[0]
                             : error.non_field_errors;
-                    } else if (error.detail) {
-                        errorMessage = error.detail;
                     } else if (error.username) {
                         errorMessage = Array.isArray(error.username)
                             ? error.username[0]
@@ -95,11 +97,19 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
         axios.post(`${API_BASE}/rest-auth/register/`, signupData)
             .then(res => {
                 setShow(true);
-                setTimeout(() => setShow(false), 3500);
                 setClassName(`bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md transition duration-300 ease-in-out`);
-                setMessage(`${username} has been successfully registered.`);
-                navigate("/");
+
+                // Get the message from the backend response
+                const successMessage = res.data.detail || `${username} has been successfully registered.`;
+                setMessage(successMessage);
+
                 setLoading(false);
+
+                // Don't navigate immediately - let user see the message
+                setTimeout(() => {
+                    setShow(false);
+                    navigate("/");
+                }, 5000); // Show message for 5 seconds before redirecting
             })
             .catch(err => {
                 console.log('Signup error:', err);
@@ -110,7 +120,11 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
                 let errorMessage = 'Registration failed. Please try again.';
                 if (err.response && err.response.data) {
                     const error = err.response.data;
-                    if (error.username) {
+
+                    // Check for the 'detail' field first (from your custom response)
+                    if (error.detail) {
+                        errorMessage = error.detail;
+                    } else if (error.username) {
                         errorMessage = Array.isArray(error.username)
                             ? error.username[0]
                             : error.username;
@@ -131,7 +145,7 @@ const Authenticate = ({ setToken, setId, setUser, setMessage, setClassName, setS
 
                 setMessage(errorMessage);
                 setShow(true);
-                setTimeout(() => setShow(false), 3500);
+                setTimeout(() => setShow(false), 5000); // Increased to 5 seconds for better readability
             });
     };
 

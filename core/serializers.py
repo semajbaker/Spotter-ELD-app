@@ -63,16 +63,26 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
         return data
 
-    
     def create(self, validated_data):
-        users = user_model.objects.create(
+        validated_data.pop('password2')  # Remove password2 before creating user
+        
+        user = user_model.objects.create(
             email=validated_data['email'],
-            username=validated_data['username']
+            username=validated_data['username'],
+            is_active=False  # User is inactive until email is verified
         )
-        users.set_password(validated_data['password'])
-        users.save()
-        return users
-
+        user.set_password(validated_data['password'])
+        user.save()
+        
+        # Create unverified email address
+        EmailAddress.objects.create(
+            user=user,
+            email=user.email,
+            primary=True,
+            verified=False
+        )
+        
+        return user
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     password_reset_form_class = ResetPasswordForm

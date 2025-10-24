@@ -1,10 +1,24 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.account.models import EmailAddress
+from allauth.account.adapter import DefaultAccountAdapter
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-
-
+class MyAccountAdapter(DefaultAccountAdapter):
+    def confirm_email(self, request, email_address):
+        """
+        Marks the email address as confirmed and activates the user
+        """
+        email_address.verified = True
+        email_address.set_as_primary(conditional=True)
+        email_address.save()
+        
+        # Activate the user
+        user = email_address.user
+        user.is_active = True
+        user.save()
+        
+        return email_address
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
         """

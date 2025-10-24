@@ -1,16 +1,45 @@
 // frontend/src/components/driver/TopBar.js
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as fa from 'react-icons/fa';
+import * as bs from 'react-icons/bs';
 
-const DriverTopBar = ({ currentUser, onLogout, onOpenSettings }) => {
+const API_BASE = process.env.REACT_APP_API_URL;
+
+const TopBar = ({ onLogout, onOpenSettings, onToggleMobileNav, isMobileNavActive }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    // Fetch current user data
+    useEffect(() => {
+        const fetchCurrentUser = () => {
+            fetch(`${API_BASE}/rest-auth/user/`, {
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    setCurrentUser(data);
+                })
+                .catch(error => console.error('Error fetching user data:', error));
+        };
+
+        fetchCurrentUser();
+    }, []);
 
     return (
         <nav className="dashboard-topbar bg-white dark:bg-gray-800 shadow-md px-6 py-4 fixed top-0 right-0 left-0 z-40 xl:left-[300px]">
             <div className="flex justify-between items-center">
-                {/* Left side - Page title */}
+                {/* Left side - Mobile nav toggle & Page title */}
                 <div className="flex items-center gap-4">
+                    {/* Mobile nav toggle button */}
+                    <button
+                        onClick={onToggleMobileNav}
+                        className="xl:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-2xl text-gray-700 dark:text-gray-300"
+                        aria-label="Toggle mobile navigation"
+                    >
+                        {isMobileNavActive ? <bs.BsX /> : <bs.BsList />}
+                    </button>
+
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Driver Dashboard
                     </h2>
@@ -33,20 +62,23 @@ const DriverTopBar = ({ currentUser, onLogout, onOpenSettings }) => {
                             className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-                                {currentUser?.first_name ? currentUser.first_name.charAt(0).toUpperCase() : currentUser?.username?.charAt(0).toUpperCase() || 'U'}
+                                {currentUser?.first_name ? currentUser.first_name.charAt(0) : currentUser?.username?.charAt(0) || 'A'}
                             </div>
                             <fa.FaChevronDown className="text-gray-600 dark:text-gray-400" />
                         </button>
 
                         {/* Dropdown menu */}
                         {showUserMenu && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
                                 <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
                                         {currentUser?.username}
                                     </p>
                                     <p className="text-xs text-gray-600 dark:text-gray-400">
                                         {currentUser?.email}
+                                    </p>
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                                        Administrator
                                     </p>
                                 </div>
                                 <button
@@ -56,7 +88,7 @@ const DriverTopBar = ({ currentUser, onLogout, onOpenSettings }) => {
                                             onOpenSettings();
                                         }
                                     }}
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 >
                                     <fa.FaCog className="inline mr-2" /> Settings
                                 </button>
@@ -67,7 +99,7 @@ const DriverTopBar = ({ currentUser, onLogout, onOpenSettings }) => {
                                             onLogout();
                                         }
                                     }}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 >
                                     <fa.FaSignOutAlt className="inline mr-2" /> Logout
                                 </button>
@@ -80,4 +112,4 @@ const DriverTopBar = ({ currentUser, onLogout, onOpenSettings }) => {
     );
 };
 
-export default DriverTopBar;
+export default TopBar;

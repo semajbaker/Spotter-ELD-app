@@ -1,6 +1,6 @@
 import { Link as ScrollLink } from 'react-scroll';
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../images/logo.svg';
 import * as fa from 'react-icons/fa';
 import * as bs from 'react-icons/bs';
@@ -18,6 +18,7 @@ const Navbar = (props) => {
 
   useEffect(() => {
     document.body.className = nav;
+    
     const handleScroll = () => {
       const sections = ['home', 'about', 'resume', 'services', 'contact'];
       let currentSection = 'home';
@@ -31,6 +32,7 @@ const Navbar = (props) => {
 
       setActiveSection(currentSection);
     };
+    
     const handleClickOutside = (event) => {
       if (display && 
           !event.target.closest('.navbar_toggle') && 
@@ -41,7 +43,8 @@ const Navbar = (props) => {
     };
 
     document.addEventListener('click', handleClickOutside);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
     return () => {
       document.removeEventListener('click', handleClickOutside);
       window.removeEventListener('scroll', handleScroll);
@@ -63,7 +66,10 @@ const Navbar = (props) => {
     closeMobileMenu();
     navigate('/');
     setTimeout(() => {
-      document.getElementById(section).scrollIntoView({ behavior: 'smooth' });
+      const element = document.getElementById(section);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }, 100);
   };
 
@@ -71,6 +77,26 @@ const Navbar = (props) => {
   if (isDashboard) {
     return null;
   }
+
+  // Clone the auth prop with modified onClick that closes mobile menu
+  const authWithMobileClose = props.auth ? (
+    <li>
+      {props.auth.props.children.props.children ? (
+        <Link
+          onClick={(e) => {
+            closeMobileMenu(); // Close mobile menu first
+            if (props.auth.props.children.props.onClick) {
+              props.auth.props.children.props.onClick(e);
+            }
+          }}
+          className="navbar_links scrollto"
+          style={{ cursor: 'pointer' }}
+        >
+          {props.auth.props.children.props.children}
+        </Link>
+      ) : null}
+    </li>
+  ) : null;
 
   return (
     <nav className="navbar" style={{ zIndex: 9999, position: 'fixed', width: '100%', top: 0 }}>
@@ -149,8 +175,8 @@ const Navbar = (props) => {
           {props.admin}
           {/* Show driver dashboard icon for regular users */}
           {props.dashboard}
-          {/* Show auth (login/logout) icon */}
-          {props.auth}
+          {/* Show auth (login/logout) icon with mobile menu close */}
+          {authWithMobileClose}
         </ul>
       </div>
     </nav>

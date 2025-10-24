@@ -5,6 +5,7 @@ from time import time, sleep
 from datetime import datetime, timedelta
 from django.shortcuts import render
 from django.utils import timezone
+from rest_framework.permissions import AllowAny
 from rest_framework.generics import (
     GenericAPIView, CreateAPIView, ListCreateAPIView,
     RetrieveUpdateDestroyAPIView, ListAPIView
@@ -27,7 +28,7 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.account.views import PasswordResetFromKeyView
 from dj_rest_auth.registration.views import SocialLoginView
 from dj_rest_auth.views import PasswordResetView
-
+from allauth.account.utils import send_email_confirmation
 from .serializers import (
     UserSignupSerializer, UserLoginSerializer, UserSerializer, GroupSerializer,
     TokenSerializer, EmailAddressSerializer, SocialAccountSerializer,
@@ -48,32 +49,106 @@ def index(request):
     return render(request, 'index.html')
 
 
-class SignUp(APIView):
-    def post(self, request):
-        serializer = UserSignupSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class SignUp(CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSignupSerializer
+    permission_classes = [AllowAny]
 
-
-class Login(GenericAPIView):
-    serializer_class = UserLoginSerializer
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
-    
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
-        token, created = Token.objects.get_or_create(user=user)
-        login(request, user)
-        return Response({
-            'token': token.key,
-            'user_id': int(user.id),
-            'is_superuser': user.is_superuser
-        })
+        user = serializer.save()
+        
+        # Send verification email
+        try:
+            send_email_confirmation(request, user)
+            return Response(
+                {
+                    'detail': 'Verification email sent. Please check your email to activate your account.',
+                    'email': user.email
+                },
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            # If email fails, still return success but log the error
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send verification email: {str(e)}")
+            
+            return Response(
+                {
+                    'detail': 'Account created but verification email could not be sent. Please contact support.',
+                    'email': user.email
+                },
+                status=status.HTTP_201_CREATED
+            )
 
 
+class Login(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data
+            
+            # Check if email is verified
+            if not user.is_active:
+                return Response(
+                    {
+                        'detail': 'Please verify your email address before logging in.',
+                        'email': user.email,
+                        'needs_verification': True
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'is_superuser': user.is_superuser  # Add this for consistency
+                }
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ResendVerificationEmail(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        email = request.data.get('email')
+        
+        if not email:
+            return Response(
+                {'detail': 'Email is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            if user.is_active:
+                return Response(
+                    {'detail': 'Email is already verified.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            send_email_confirmation(request, user)
+            return Response(
+                {'detail': 'Verification email has been resent.'},
+                status=status.HTTP_200_OK
+            )
+            
+        except User.DoesNotExist:
+            # Don't reveal if email exists or not (security)
+            return Response(
+                {'detail': 'If this email exists, a verification email has been sent.'},
+                status=status.HTTP_200_OK
+            )
 class GoogleOAuth2IatValidationAdapter(GoogleOAuth2Adapter):
     def complete_login(self, request, app, token, response, **kwargs):
         try:

@@ -123,7 +123,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_ADAPTER = 'core.adapters.MySocialAccountAdapter'
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+ACCOUNT_ADAPTER = 'core.adapters.MyAccountAdapter'
 
 CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL')]
 CORS_ALLOW_CREDENTIALS = True
@@ -256,6 +256,16 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
+# Email verification settings
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # or 'optional'
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Allow login with username or email
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+# Email configuration (keep your existing EMAIL settings)
+
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

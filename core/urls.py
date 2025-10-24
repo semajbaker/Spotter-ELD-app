@@ -1,4 +1,5 @@
 from django.conf import settings
+from allauth.account.views import ConfirmEmailView
 from django.urls import path, re_path, include
 from django.conf.urls.static import static
 from django.views.static import serve
@@ -9,7 +10,7 @@ from .views import (
     EmailAddressList, EmailAddressDetail, GoogleLogin, GithubLogin, 
     FacebookLogin, CustomPasswordResetView, CustomPasswordResetFromKeyView, 
     SocialAccountList, TripViewSet, StopViewSet, DailyLogViewSet, 
-    LogEntryViewSet
+    LogEntryViewSet, ResendVerificationEmail
 )
 
 # Create router for viewsets
@@ -51,6 +52,12 @@ urlpatterns = [
     path('accounts/password/reset/key/<uidb64>/<token>/', 
          CustomPasswordResetFromKeyView.as_view(), 
          name='account_reset_password_from_key'),
+    path('accounts/confirm-email/<str:key>/', 
+         ConfirmEmailView.as_view(), 
+         name='account_confirm_email'),
+    path('rest-auth/resend-verification/', 
+        ResendVerificationEmail.as_view(), 
+        name='resend_verification'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

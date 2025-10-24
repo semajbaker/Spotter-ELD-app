@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/Dashboard.js
 import { useDashboardData } from '../hooks/useDashboardData';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SideNav from "../components/SideNav";
 import TopBar from "../components/TopBar";
 import Table from "../components/Table";
@@ -33,7 +33,39 @@ const Dashboard = ({ handleModal }) => {
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [showTripDetails, setShowTripDetails] = useState(false);
     const [showProfileSettings, setShowProfileSettings] = useState(false);
+    const [isMobileNavActive, setIsMobileNavActive] = useState(false);
 
+    // Close mobile nav when clicking outside the sidebar or topbar. Also keep
+    // the body's `mobile-nav-active` class in sync so the CSS transitions apply.
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                isMobileNavActive &&
+                !event.target.closest('#header') &&
+                !event.target.closest('.dashboard-topbar')
+            ) {
+                setIsMobileNavActive(false);
+                document.body.classList.remove('mobile-nav-active');
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [isMobileNavActive]);
+
+    const handleToggleMobileNav = (event) => {
+        if (event && event.stopPropagation) event.stopPropagation();
+
+        const next = !isMobileNavActive;
+        setIsMobileNavActive(next);
+        if (next) document.body.classList.add('mobile-nav-active');
+        else document.body.classList.remove('mobile-nav-active');
+    };
+
+    const handleCloseMobileNav = () => {
+        setIsMobileNavActive(false);
+        document.body.classList.remove('mobile-nav-active');
+    };
     // Search state
     const [searchQueries, setSearchQueries] = useState({
         trips: '',
@@ -647,10 +679,16 @@ const Dashboard = ({ handleModal }) => {
         <>
             <main id="main">
                 <TopBar
+                    onToggleMobileNav={handleToggleMobileNav}
+                    isMobileNavActive={isMobileNavActive}
                     onLogout={handleModal}
                     onOpenSettings={() => setShowProfileSettings(true)}
                 />
-                <SideNav onLogout={handleModal} />
+                <SideNav
+                    isMobileNavActive={isMobileNavActive}
+                    onCloseMobileNav={handleCloseMobileNav}
+                    onLogout={handleModal} />
+                    
                 <section className="dashboard-content">
                     <div className="container mx-auto px-4">
                         {/* Loading Overlay */}
